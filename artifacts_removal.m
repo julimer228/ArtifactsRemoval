@@ -26,7 +26,7 @@ function im_res = artifacts_removal(im, cut_point,sigm, filter_size)
     map_edges = double(~im_edges);
     
     %% make a filter based on the chosen sigma
-    filter_mask = make_filter();
+    filter_mask = make_gauss_filter(sigm, filter_size);
 
     %% make a weight map 
     W = imfilter(map_edges, filter_mask, 'symmetric', 'conv');
@@ -66,10 +66,7 @@ function true_edges = delete_false_edges(im, n, m, cut)
 
 end
 
-function mask = make_filter()
-% make a 7x7 gaussian filter with sigma=1.1
-    sigm = 1.1;
-    f_size = 2*round(3*sigm);
+function mask = make_gauss_filter(sigm, f_size)
     [x, y] = meshgrid(-f_size/2:f_size/2, -f_size/2:f_size/2);
     to_be_exp = -(x.^2+y.^2) / (2*sigm*sigm);
     mask = exp(to_be_exp) / (2*pi*sigm*sigm);            

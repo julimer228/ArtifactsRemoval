@@ -1,9 +1,9 @@
-function im_res = artifacts_removal(im, cut_point,sigm, filter_size)
+function im_res = artifacts_removal_fixed(im, cut_point,sigm, filter_size)
 % remove jpg compression artifacts from an RGB image
     
     %% preallocate memory
     [n, m, d] = size(im);
-    all_edges = zeros(n, m, d, 'logical');
+    all_edges = zeros(n, m, d, 'double'); % now we want numbers not logical values
     
     %% detect all edges for each image layer
     for i=1:d  
@@ -16,7 +16,13 @@ function im_res = artifacts_removal(im, cut_point,sigm, filter_size)
         imshow(gmag_grayscale);
         
         %% detect edges
-        all_edges(:,:,i) = imbinarize(gmag_grayscale, 'global'); %Otsu                
+        [counts, x] = imhist(gmag_grayscale, 256); % we have 256 bins ( color values from 0 to 255)
+        stem(x*256, counts); 
+        [T, EM] = otsuthresh(counts); % threshold, end effectiveness of the tresholding
+        BW = imbinarize(gmag_grayscale,T);
+        figure
+        imshow(BW)
+        all_edges(:,:,i) = BW; % imbinarize(gmag_grayscale, 'global'); %Otsu                
         
     end
     

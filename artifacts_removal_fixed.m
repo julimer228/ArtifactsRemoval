@@ -4,33 +4,32 @@ function im_res = artifacts_removal_fixed(im, cut_point,sigm, filter_size)
     %% preallocate memory
     [n, m, d] = size(im);
     all_edges = zeros(n, m, d, 'double'); % now we want numbers not logical values
-    
+
     %% detect all edges for each image layer
     for i=1:d  
         %% extract a layer 
         layer = im(:,:,i);
-        
         %% count gradients        
         [gmag, ~] = imgradient(layer, 'central');
         gmag_grayscale = mat2gray(gmag);
-        imshow(gmag_grayscale);
-        
+        gmag_grayscale=conv_to_uint8(gmag_grayscale); 
         %% detect edges
-        [counts, x] = imhist(gmag_grayscale, 256); % we have 256 bins ( color values from 0 to 255)
-        stem(x*256, counts); 
-        [T, EM] = otsuthresh(counts); % threshold, end effectiveness of the tresholding
-        BW = imbinarize(gmag_grayscale,T);
-        figure
-        imshow(BW)
-        all_edges(:,:,i) = BW; % imbinarize(gmag_grayscale, 'global'); %Otsu                
-        
+%         [counts, x] = imhist(gmag_grayscale); % we have 256 bins ( color values from 0 to 255)
+%         imhist(gmag_grayscale);
+%         [T, EM] = otsuthresh(counts); % threshold, end effectiveness of the tresholding
+        [T, ~]=graythresh(gmag_grayscale); % makes image histogram inside the function
+        T=T*255.0;
+        gmag_grayscale(gmag_grayscale < T) = 0; % if pixel value is below treshold replace it with 0
+        gmag_grayscale(gmag_grayscale > T) =gmag_grayscale(gmag_grayscale > T) - T;  % (piksel-treshold)/(1-treshold)
+        gmag_grayscale = double(gmag_grayscale);
+        all_edges(:,:,i) = gmag_grayscale ./(255-T);                      
     end
     
-    %% make a map of the edges 
-    im_edges = logical(sum(all_edges, 3) == 3);
+    %% make a map of the edges ( edge in three channels => 0, compression grid and other => 1 )
+    im_edges = sum(all_edges, 3);
     im_edges = delete_false_edges(im_edges, n, m, cut_point);
     im_edges = imopen(im_edges, strel('square',2));
-    map_edges = double(~im_edges);
+    map_edges = imcomplement(im_edges);
     
     %% make a filter based on the chosen sigma
     filter_mask = make_gauss_filter(sigm, filter_size);
@@ -68,7 +67,7 @@ function true_edges = delete_false_edges(im, n, m, cut)
     cols = cols(mod(cols+shift_c, 8) ~= 1);
     
     %% copy only true edges
-    true_edges = zeros(n, m, 'logical');
+    true_edges = zeros(n, m, 'double');
     true_edges(rows, cols) = im(rows, cols);
 
 end
@@ -78,3 +77,10 @@ function mask = make_gauss_filter(sigm, f_size)
     to_be_exp = -(x.^2+y.^2) / (2*sigm*sigm);
     mask = exp(to_be_exp) / (2*pi*sigm*sigm);            
 end
+
+function converted = conv_to_uint8(im)
+    im = double(im);
+    converted = uint8(im ./ max(max(im)) * 255);
+end
+
+

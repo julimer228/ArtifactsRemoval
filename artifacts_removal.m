@@ -13,16 +13,15 @@ function im_res = artifacts_removal(im, cut_point,sigm, filter_size)
         %% count gradients        
         [gmag, ~] = imgradient(layer, 'central');
         gmag_grayscale = mat2gray(gmag);
-        imshow(gmag_grayscale);
         
         %% detect edges
-        all_edges(:,:,i) = imbinarize(gmag_grayscale, 'global'); %Otsu                
-        
+        all_edges(:,:,i) = imbinarize(gmag_grayscale, 'global'); %Otsu  
     end
     
     %% make a map of the edges 
-    im_edges = logical(sum(all_edges, 3) == 3);
-    im_edges = delete_false_edges(im_edges, n, m, cut_point);
+    im_edges = logical(sum(all_edges, 3) == 3); % sum ones 
+    imshow(im_edges); 
+    im_edges = delete_false_edges(im_edges, n, m, cut_point); 
     im_edges = imopen(im_edges, strel('square',2));
     map_edges = double(~im_edges);
     
@@ -31,7 +30,7 @@ function im_res = artifacts_removal(im, cut_point,sigm, filter_size)
 
     %% make a weight map 
     W = imfilter(map_edges, filter_mask, 'symmetric', 'conv');
-
+    
     %% filter whole image
     im_res = imfilter(double(im) .* map_edges, ...
         filter_mask, 'symmetric', 'conv') ./ W;

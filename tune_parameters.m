@@ -22,7 +22,7 @@ t_res = table(t_size{:}, t_vars{:}, t_names{:});
 
 
 %% main loop over the images
-for ind=1:length(imFiles);    
+for ind=1:length(imFiles)   
     %% read an image and convert it into uint8
     im_name = strsplit(imFiles(ind).name, '.');
     f_name = [imFiles(ind).folder '\' imFiles(ind).name];
@@ -72,7 +72,7 @@ end
 
 
 %% write results
-writetable(t_res, 'tuning_gauss_2.csv');
+writetable(t_res, 'tuning_gauss_fixed.csv');
 
 %% converting uint8 to uint16 function
 function converted = conv_to_uint8(im)

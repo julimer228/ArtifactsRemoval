@@ -1,0 +1,38 @@
+classdef quality_metrics
+    % Summary of this class goes here
+    %   Detailed explanation goes here
+    methods (Static)
+        function [im_scc, im_ssim, im_psnr, im_mse, im_multissim] = count_metrics(im, im_org)
+            im_scc=round(quality_metrics.count_scc(im, im_org),5);
+            im_ssim=round(ssim(im, im_org), 5);
+            im_psnr=round(psnr(im, im_org), 5);
+            im_mse=round(quality_metrics.count_mse(im, im_org),5);
+            im_multissim=round(quality_metrics.count_multissim(im, im_org), 5);
+        end
+
+        function im_scc = count_scc(im, im_org)
+            im_gray=rgb2gray(im); % convert to a gray scale
+            im_org_gray=rgb2gray(im_org);
+            im_scc=corr2(im_gray, im_org_gray); % count correlation
+        end
+        
+        function im_mse=count_mse(im, im_org)
+            im_gray=rgb2gray(im); % convert to a gray scale
+            im_org_gray=rgb2gray(im_org);
+            im_mse=mse(im_gray, im_org_gray); 
+        end
+        
+        function im_multissim=count_multissim(im, im_org)
+            %COUNT_MULTISSIM Multiscale structural similarity 
+            % the closer to 1 the better quality
+            im_gray=rgb2gray(im); % convert to a gray scale
+            im_org_gray=rgb2gray(im_org);
+            im_multissim=multissim(im_gray, im_org_gray); 
+        end
+        
+        function delta = count_delta(im_metric, jpg_metric)
+            delta=round((im_metric - jpg_metric) / jpg_metric * 100, 5);
+        end
+    end
+end
+

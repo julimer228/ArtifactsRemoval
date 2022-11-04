@@ -1,10 +1,10 @@
-function im_res = artifacts_removal(im, cut_point,sigm, filter_size)
+function im_res = artifacts_removal(im, cut_point,sigm, filter_size, filter_type)
 % remove jpg compression artifacts from an RGB image
-    
     %% preallocate memory
     [n, m, d] = size(im);
     all_edges = zeros(n, m, d, 'logical');
-    
+    filt=filters(filter_type, filter_size, sigm);
+
     %% detect all edges for each image layer
     for i=1:d  
         %% extract a layer 
@@ -25,8 +25,8 @@ function im_res = artifacts_removal(im, cut_point,sigm, filter_size)
     im_edges = imopen(im_edges, strel('square',2));
     map_edges = double(~im_edges);
     
-    %% make a filter based on the chosen sigma
-    filter_mask = make_gauss_filter(sigm, filter_size);
+    %% make a filter based on the chosen parameters
+    filter_mask=make_filter(filt);
 
     %% make a weight map 
     W = imfilter(map_edges, filter_mask, 'symmetric', 'conv');
@@ -64,10 +64,4 @@ function true_edges = delete_false_edges(im, n, m, cut)
     true_edges = zeros(n, m, 'logical');
     true_edges(rows, cols) = im(rows, cols);
 
-end
-
-function mask = make_gauss_filter(sigm, f_size)
-    [x, y] = meshgrid(-f_size/2:f_size/2, -f_size/2:f_size/2);
-    to_be_exp = -(x.^2+y.^2) / (2*sigm*sigm);
-    mask = exp(to_be_exp) / (2*pi*sigm*sigm);            
 end

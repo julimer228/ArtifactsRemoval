@@ -9,90 +9,105 @@ imFiles = dir(imPath);
 use_maps = {1; 0};
 sigmas = {0.4 ; 0.7 ; 1.1 ; 1.4 ; 1.7 ; 2};
 filter_sizes = {3 ; 5 ; 7 ; 9 ; 11 ; 13};
+methods = {'fixed_multilevel_tresholding'}; %'otsu', 'multilevel_tresholding'}% 'fixed_multilevel_tresholding'};
 
-%% make a table for the results
-t_size = {'Size' [0 14]};
-t_vars = {'VariableTypes', ["string", "string", "double", "double", ...
+%% make a tables for the results
+t_size_gauss = {'Size' [0 20]};
+t_vars_gauss = {'VariableTypes', ["string", "string", "string", "double", ...
     "double", "double", "double", "double","double","double","double" , ...
-    "double", "double", "double"]};
-t_names = {'VariableNames', ["name", "type", "map",  "sigma", ...
+    "double", "double", "double", "double", "double", "double", "double", "double", "double"]};
+
+t_names_gauss = {'VariableNames', ["name", "type", "method", "sigma", ...
     "filter_size", "jpg_PSNR", "PSNR", "delta_PSNR","jpg_SSIM","SSIM",...
-    "delta_SSIM", "jpg_SCC", "SCC", "delta_SCC"]};
-t_res = table(t_size{:}, t_vars{:}, t_names{:});
+    "delta_SSIM", "jpg_SCC", "SCC", "delta_SCC", "jpg_MSE", "MSE", "delta_MSE",...
+    "jpg_multissim", "multissim", "delta_multissim"]};
 
+t_res_gauss_otsu = table(t_size_gauss{:}, t_vars_gauss{:}, t_names_gauss{:});
+t_res_gauss_multilevel = table(t_size_gauss{:}, t_vars_gauss{:}, t_names_gauss{:});
+t_res_gauss_fixed_multilevel = table(t_size_gauss{:}, t_vars_gauss{:}, t_names_gauss{:});
 
+t_tabs_gauss={t_res_gauss_otsu, t_res_gauss_multilevel}% t_res_gauss_fixed_multilevel};
+
+t_size_avg = {'Size' [0 19]};
+t_vars_avg = {'VariableTypes', ["string", "string", "string", ...
+    "double", "double", "double", "double","double","double","double" , ...
+    "double", "double", "double", "double", "double", "double", "double", "double", "double"]};
+
+t_names_avg = {'VariableNames', ["name", "type", "method", ...
+    "filter_size", "jpg_PSNR", "PSNR", "delta_PSNR","jpg_SSIM","SSIM",...
+    "delta_SSIM", "jpg_SCC", "SCC", "delta_SCC", "jpg_MSE", "MSE", "delta_MSE",...
+    "jpg_multissim", "multissim", "delta_multissim"]};
+
+t_res_avg_otsu = table(t_size_avg{:}, t_vars_avg{:}, t_names_avg{:});
+t_res_avg_multilevel = table(t_size_avg{:}, t_vars_avg{:}, t_names_avg{:});
+t_res_avg_fixed_multilevel = table(t_size_avg{:}, t_vars_avg{:}, t_names_avg{:});
+
+t_tabs_avg={t_res_avg_fixed_multilevel};%t_res_avg_otsu, t_res_avg_multilevel, t_res_avg_fixed_multilevel};
 %% main loop over the images
 for ind=1:length(imFiles)   
     %% read an image and convert it into uint8
     im_name = strsplit(imFiles(ind).name, '.');
     f_name = [imFiles(ind).folder '\' imFiles(ind).name];
     im = imread(f_name);
-    im_org = conv_to_uint8(im); 
+    im_org = additional_functions.conv_to_uint8(im); 
     
     %% compress to jpg with quality 30%
     imwrite(im_org, 'jpg_conv.jpg', 'jpg', 'Quality', 30);
     im_jpg = imread('jpg_conv.jpg');
     delete('jpg_conv.jpg');
 
-    [jpg_scc, jpg_ssim, jpg_psnr] = count_metrics(im_jpg, im_org);
+    %% count quality metrics for the jpg image
+    [jpg_scc, jpg_ssim, jpg_psnr, jpg_mse, jpg_multissim] = quality_metrics.count_metrics(im_jpg, im_org);
 
-%     %% fill the table using gaussian filter
-%     for i=1:length(use_maps)
-%         for j=1:length(sigmas)
-%             for k=1:length(filter_sizes)
-%                im = artifacts_removal(im_jpg, [1 1], sigmas{j},...
-%                    filter_sizes{k}); 
-%                 [im_scc, im_ssim, im_psnr] = count_metrics(im, im_org);
-%                 delta_psnr = count_delta(im_psnr, jpg_psnr);
-%                 delta_ssim = count_delta(im_ssim, jpg_ssim);
-%                 delta_scc = count_delta(im_scc, jpg_scc);
-%                 t_res(end+1,:) = {im_name{1}, 'gauss', use_maps{i}, ...
-%                 sigmas{j}, filter_sizes{k}, jpg_psnr, im_psnr, delta_psnr, jpg_ssim,...
-%                 im_ssim, delta_ssim, jpg_scc, im_scc, delta_scc}; 
-%            end
-%         end
-%     end
-
-     %% fill the table using gaussian filter
-    for i=1:length(use_maps)
+    %% run gaussian filter 
+    for i=1:length(methods)
         for j=1:length(sigmas) 
                f_size = 2*round(3*sigmas{j});
-               im = artifacts_removal_fixed(im_jpg, [1 1], sigmas{j},...
-               f_size); 
-                [im_scc, im_ssim, im_psnr] = count_metrics(im, im_org);
-                delta_psnr = count_delta(im_psnr, jpg_psnr);
-                delta_ssim = count_delta(im_ssim, jpg_ssim);
-                delta_scc = count_delta(im_scc, jpg_scc);
-                t_res(end+1,:) = {im_name{1}, 'gauss', use_maps{i}, ...
+                rem = remove_artifacts(im_jpg, [1 1], sigmas{j},...
+                f_size, 'gauss', methods{i}); 
+                im=run_artifacts_removal(rem);
+                [im_scc, im_ssim, im_psnr, im_mse, im_multissim] = quality_metrics.count_metrics(im, im_org);
+                delta_psnr = quality_metrics.count_delta(im_psnr, jpg_psnr);
+                delta_ssim = quality_metrics.count_delta(im_ssim, jpg_ssim);
+                delta_scc = quality_metrics.count_delta(im_scc, jpg_scc);
+                delta_mse = quality_metrics.count_delta(im_mse, jpg_mse);
+                delta_multissim = quality_metrics.count_delta(im_multissim, jpg_multissim);
+                t_tabs_gauss{i}(end+1,:) = {im_name{1}, 'gauss',methods{i}, ...
                 sigmas{j}, f_size, jpg_psnr, im_psnr, delta_psnr, jpg_ssim,...
-                im_ssim, delta_ssim, jpg_scc, im_scc, delta_scc};
+                im_ssim, delta_ssim, jpg_scc, im_scc, delta_scc,...
+                jpg_mse, im_mse, delta_mse, jpg_multissim, im_multissim, delta_multissim};
+        end
+    end
+
+    % Average filter does not use sigma
+    use_sigma=false;
+    %% run average filter 
+    for i=1:length(methods)
+        for j=1:length(filter_sizes) 
+                rem = remove_artifacts(im_jpg, [1 1], use_sigma,...
+                filter_sizes{j}, 'avg', methods{i}); 
+                im=run_artifacts_removal(rem);
+                [im_scc, im_ssim, im_psnr, im_mse, im_multissim] = quality_metrics.count_metrics(im, im_org);
+                delta_psnr = quality_metrics.count_delta(im_psnr, jpg_psnr);
+                delta_ssim = quality_metrics.count_delta(im_ssim, jpg_ssim);
+                delta_scc = quality_metrics.count_delta(im_scc, jpg_scc);
+                delta_mse = quality_metrics.count_delta(im_mse, jpg_mse);
+                delta_multissim = quality_metrics.count_delta(im_multissim, jpg_multissim);
+                t_tabs_avg{i}(end+1,:) = {im_name{1}, 'avg',methods{i}, ...
+                filter_sizes{j}, jpg_psnr, im_psnr, delta_psnr, jpg_ssim,...
+                im_ssim, delta_ssim, jpg_scc, im_scc, delta_scc,...
+                jpg_mse, im_mse, delta_mse, jpg_multissim, im_multissim, delta_multissim};
         end
     end
 end
 
-
-%% write results
-writetable(t_res, 'tuning_gauss_fixed.csv');
-
-%% converting uint8 to uint16 function
-function converted = conv_to_uint8(im)
-    im = double(im);
-    converted = uint8(im ./ max(max(im)) * 255);
+%% save results to the csv file [filter_method.csv] 
+for i=1:length(t_tabs_avg)
+    writetable(t_tabs_avg{i}, strcat(string(i),'_avg.csv')); 
 end
 
-function [im_scc, im_ssim, im_psnr] = count_metrics(im, im_org)
-    im_scc=round(count_scc(im, im_org),5);
-    im_ssim=round(ssim(im, im_org), 5);
-    im_psnr=round(psnr(im, im_org), 5);
+for i=1:length(t_tabs_gauss)
+     writetable(t_tabs_gauss{i}, strcat(string(i),'_gauss.csv'));
 end
 
-function im_scc = count_scc(im, im_org)
-    im_gray=rgb2gray(im); % convert to a gray scale
-    im_org_gray=rgb2gray(im_org);
-    im_scc=corr2(im_gray, im_org_gray); % count correlation
-end
-
-function delta = count_delta(im_metric, jpg_metric)
-    delta=round((im_metric - jpg_metric) / jpg_metric * 100, 5);
-end
-
+scatter(t_tabs_gauss{1}.delta_PSNR, t_tabs_gauss{1}.sigma)

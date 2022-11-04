@@ -9,7 +9,7 @@ imFiles = dir(imPath);
 use_maps = {1; 0};
 sigmas = {0.4 ; 0.7 ; 1.1 ; 1.4 ; 1.7 ; 2};
 filter_sizes = {3 ; 5 ; 7 ; 9 ; 11 ; 13};
-methods = {'fixed_multilevel_tresholding'}; %'otsu', 'multilevel_tresholding'}% 'fixed_multilevel_tresholding'};
+methods = {'otsu', 'multilevel_tresholding', 'fixed_multilevel_tresholding'};
 
 %% make a tables for the results
 t_size_gauss = {'Size' [0 20]};
@@ -26,7 +26,7 @@ t_res_gauss_otsu = table(t_size_gauss{:}, t_vars_gauss{:}, t_names_gauss{:});
 t_res_gauss_multilevel = table(t_size_gauss{:}, t_vars_gauss{:}, t_names_gauss{:});
 t_res_gauss_fixed_multilevel = table(t_size_gauss{:}, t_vars_gauss{:}, t_names_gauss{:});
 
-t_tabs_gauss={t_res_gauss_otsu, t_res_gauss_multilevel}% t_res_gauss_fixed_multilevel};
+t_tabs_gauss={t_res_gauss_otsu, t_res_gauss_multilevel, t_res_gauss_fixed_multilevel};
 
 t_size_avg = {'Size' [0 19]};
 t_vars_avg = {'VariableTypes', ["string", "string", "string", ...
@@ -42,7 +42,7 @@ t_res_avg_otsu = table(t_size_avg{:}, t_vars_avg{:}, t_names_avg{:});
 t_res_avg_multilevel = table(t_size_avg{:}, t_vars_avg{:}, t_names_avg{:});
 t_res_avg_fixed_multilevel = table(t_size_avg{:}, t_vars_avg{:}, t_names_avg{:});
 
-t_tabs_avg={t_res_avg_fixed_multilevel};%t_res_avg_otsu, t_res_avg_multilevel, t_res_avg_fixed_multilevel};
+t_tabs_avg={t_res_avg_otsu, t_res_avg_multilevel, t_res_avg_fixed_multilevel};
 %% main loop over the images
 for ind=1:length(imFiles)   
     %% read an image and convert it into uint8
@@ -103,11 +103,10 @@ end
 
 %% save results to the csv file [i_filter.csv] 
 for i=1:length(t_tabs_avg)
-    writetable(t_tabs_avg{i}, strcat(string(i),'_avg.csv')); 
+    writetable(t_tabs_avg{i}, strcat('/results/',string(i),'_avg.csv')); 
 end
 
 for i=1:length(t_tabs_gauss)
-     writetable(t_tabs_gauss{i}, strcat(string(i),'_gauss.csv'));
+     writetable(t_tabs_gauss{i}, strcat('/results/',string(i),'_gauss.csv'));
 end
 
-scatter(t_tabs_gauss{1}.delta_PSNR, t_tabs_gauss{1}.sigma)

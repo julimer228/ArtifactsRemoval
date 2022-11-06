@@ -1,20 +1,25 @@
 %% script to tune algorithm parameters
 close all; clear all; clc 
 
-% set a path to the images
-imPath = '..\BreCaHAD\images\*.tif'; 
+%% set a path to the images
+imPath = 'C:\Users\Julia\Documents\GitHub\ArtifactsRemoval\BreCaHAD\images\*.tif'; 
 imFiles = dir(imPath);
 
 % set a path for result images
 ImageFolderResImg = '..\Results\Images\';
 
 %set a path for result .csv files
-FolderCSV ='..\Results\Tables\Raw\';
+FolderCSV ='C:\Users\Julia\Document\Results\Tables\Raw\';
 
 %% make parameter sets
 use_maps = {1; 0};
 sigmas = {0.4 ; 0.7 ; 1.1 ; 1.4 ; 1.7 ; 2};
-filter_sizes = {2 ; 4 ; 6 ; 8 ; 10 ; 12};
+filter_sizes = {0 ; 0 ; 0 ; 0 ; 0 ; 0};
+
+for i=1:length(sigmas)
+    filter_sizes{i}=2*round(3*sigmas{i});
+end
+
 methods = {'otsu', 'multilevel_tresholding', 'fixed_multilevel_tresholding'};
 
 %% make a tables for the results
@@ -27,8 +32,11 @@ t_names_gauss = {'VariableNames', ["name", "type", "method", "sigma", ...
     "filter_size", "jpg_PSNR", "PSNR", "delta_PSNR","jpg_SSIM","SSIM",...
     "delta_SSIM", "jpg_brisque", "im_brisque", "delta_brisque"]};
 
-t_res_gauss = table(t_size_gauss{:}, t_vars_gauss{:}, t_names_gauss{:});
-t_tabs_gauss={t_res_gauss, t_res_gauss, t_res_gauss};
+t_res_gauss_otsu = table(t_size_gauss{:}, t_vars_gauss{:}, t_names_gauss{:});
+t_res_gauss_multilevel = table(t_size_gauss{:}, t_vars_gauss{:}, t_names_gauss{:});
+t_res_gauss_fixed_multilevel = table(t_size_gauss{:}, t_vars_gauss{:}, t_names_gauss{:});
+
+t_tabs_gauss={t_res_gauss_otsu, t_res_gauss_multilevel, t_res_gauss_fixed_multilevel};
 
 % average filter
 t_size_avg = {'Size' [0 13]};
@@ -39,8 +47,11 @@ t_names_avg = {'VariableNames', ["name", "type", "method", ...
     "filter_size", "jpg_PSNR", "PSNR", "delta_PSNR","jpg_SSIM","SSIM",...
     "delta_SSIM", "jpg_brisque", "im_brisque", "delta_brisque"]};
 
-t_res_avg = table(t_size_avg{:}, t_vars_avg{:}, t_names_avg{:});
-t_tabs_avg={t_res_avg, t_res_avg, t_res_avg};
+t_res_avg_otsu = table(t_size_avg{:}, t_vars_avg{:}, t_names_avg{:});
+t_res_avg_multilevel = table(t_size_avg{:}, t_vars_avg{:}, t_names_avg{:});
+t_res_avg_fixed_multilevel = table(t_size_avg{:}, t_vars_avg{:}, t_names_avg{:});
+
+t_tabs_avg={t_res_avg_otsu, t_res_avg_multilevel, t_res_avg_fixed_multilevel};
 
 %% main loop over the images
 for ind=1:length(imFiles)   
@@ -80,8 +91,7 @@ for ind=1:length(imFiles)
 
                 % save image to a file
                 % [gauss_method_s{sigma}_f{filter_size}_name.jpg]
-                imgName = string(strcat(ImageFolderResImg,'gauss_',methods{i}, ...
-                    '_s_',string(sigmas{j}),'_f_',string(filter_sizes{k}),im_name(1),'.png')) ;
+                imgName = string(strcat(ImageFolderResImg,'gauss_',methods{i},'_s_',string(sigmas{j}),'_f_',string(filter_sizes{k}),im_name(1),'.png')) ;
                 imwrite(im,imgName); 
             end
         end

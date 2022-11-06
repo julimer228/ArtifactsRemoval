@@ -72,12 +72,12 @@ for k=1:length(t_avg_res)
             idx=t_avg{k}.filter_size==filter_sizes{i};
             rows=t_avg{k}(idx, :);
             % count means
-            PSNR_mean=mean(rows{:,"PSNR"});
-            delta_PSNR_mean=mean(rows{:,"delta_PSNR"});
-            SSIM_mean=mean(rows{:,"SSIM"});
-            delta_SSIM_mean=mean(rows{:,"delta_SSIM"});
-            brisque_mean=mean(rows{:,"im_brisque"});
-            delta_brisque_mean=mean(rows{:,"delta_brisque"});
+            PSNR_mean=mean(rows{:,"PSNR"},8);
+            delta_PSNR_mean=mean(rows{:,"delta_PSNR"},8);
+            SSIM_mean=mean(rows{:,"SSIM"},8);
+            delta_SSIM_mean=mean(rows{:,"delta_SSIM"},8);
+            brisque_mean=mean(rows{:,"im_brisque"},8);
+            delta_brisque_mean=mean(rows{:,"delta_brisque"},8);
             % save results to the table
             t_avg_res{k}(end+1,:)={rows.type(1),rows.method(1), ...
                     rows.filter_size(1), rows.jpg_PSNR(1), PSNR_mean, delta_PSNR_mean, rows.jpg_SSIM(1),...

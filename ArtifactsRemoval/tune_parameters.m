@@ -9,7 +9,7 @@ imFiles = dir(imPath);
 ImageFolderResImg = 'C:\Users\Julia\Documents\GitHub\ArtifactsRemoval\Results\Images\';
 
 %set a path for result .csv files
-FolderCSV ='C:\Users\Julia\Documents\GitHub\ArtifactsRemoval\Results\Tables\';
+FolderCSV ='C:\Users\Julia\Documents\GitHub\ArtifactsRemoval\Results\Tables\Raw\';
 
 %% make parameter sets
 use_maps = {1; 0};

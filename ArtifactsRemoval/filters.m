@@ -31,9 +31,11 @@ classdef filters
         function mask = gauss_filter(obj)
             %GAUSS_FILTER Returns a gaussian filter mask
             % Creates a gaussian filter mask with the given size and sigma
-            f_size=obj.Size;
+            % Substract 1 from filter size, because we have to take 0
+            % coordinate
+            f_range=obj.Size - 1;
             sigm=obj.Sigma;
-            [x, y] = meshgrid(-f_size/2:f_size/2, -f_size/2:f_size/2);
+            [x, y] = meshgrid(-f_range/2:f_range/2, -f_range/2:f_range/2);
             to_be_exp = -(x.^2+y.^2) / (2*sigm*sigm);
             mask = exp(to_be_exp) / (2*pi*sigm*sigm);          
         end

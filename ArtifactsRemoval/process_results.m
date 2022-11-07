@@ -2,20 +2,20 @@
 
 % load data from table
 % gaussian filter results
-gauss_otsu = readtable("..\Results\Tables\Raw\otsu_gauss.csv");
-gauss_multilevel=readtable("..\Results\Tables\Raw\multilevel_tresholding_gauss.csv");
-gauss_fixed=readtable("..\Results\Tables\Raw\fixed_multilevel_tresholding_gauss.csv");
+gauss_otsu = readtable("..\Results\Tables\Raw\Q30\otsu_gauss.csv");
+gauss_multilevel=readtable("..\Results\Tables\Raw\Q30\multilevel_tresholding_gauss.csv");
+gauss_fixed=readtable("..\Results\Tables\Raw\Q30\fixed_multilevel_tresholding_gauss.csv");
 t_gauss={gauss_otsu, gauss_multilevel, gauss_fixed};
 
 % avg filter results
-avg_otsu = readtable("..\Results\Tables\Raw\otsu_avg.csv");
-avg_multilevel=readtable("..\Results\Tables\Raw\multilevel_tresholding_avg.csv");
-avg_fixed=readtable("..\Results\Tables\Raw\fixed_multilevel_tresholding_avg.csv");
+avg_otsu = readtable("..\Results\Tables\Raw\Q30\otsu_avg.csv");
+avg_multilevel=readtable("..\Results\Tables\Raw\Q30\multilevel_tresholding_avg.csv");
+avg_fixed=readtable("..\Results\Tables\Raw\Q30\fixed_multilevel_tresholding_avg.csv");
 t_avg={avg_otsu, avg_multilevel, avg_fixed};
 
 % parameters for extracting rows
 sigmas = {0.4 ; 0.7 ; 1.1 ; 1.4 ; 1.7 ; 2};
-filter_sizes = {2 ; 4 ; 6 ; 8 ; 10 ; 12};
+filter_sizes = {3 ; 5 ; 7 ; 9 ; 11 ; 13};
 methods = {'otsu'; 'multilevel_tresholding'; 'fixed_multilevel_tresholding'};
 
 % tables for results
@@ -65,43 +65,43 @@ for k=1:length(t_gauss_res)
     end
 end
 
-%% count means for avg filtration results
-for k=1:length(t_avg_res)
-    for i=1:length(filter_sizes)
-            % extract rows
-            idx=t_avg{k}.filter_size==filter_sizes{i};
-            rows=t_avg{k}(idx, :);
-            % count means
-            PSNR_mean=mean(rows{:,"PSNR"});
-            delta_PSNR_mean=mean(rows{:,"delta_PSNR"});
-            SSIM_mean=mean(rows{:,"SSIM"});
-            delta_SSIM_mean=mean(rows{:,"delta_SSIM"});
-            brisque_mean=mean(rows{:,"im_brisque"});
-            delta_brisque_mean=mean(rows{:,"delta_brisque"});
-            % save results to the table
-            t_avg_res{k}(end+1,:)={rows.type(1),rows.method(1), ...
-                    rows.filter_size(1), rows.jpg_PSNR(1), PSNR_mean, delta_PSNR_mean, rows.jpg_SSIM(1),...
-                    SSIM_mean, delta_SSIM_mean, rows.jpg_brisque(1), brisque_mean, delta_brisque_mean};
-    end
-end
+% %% count means for avg filtration results
+% for k=1:length(t_avg_res)
+%     for i=1:length(filter_sizes)
+%             % extract rows
+%             idx=t_avg{k}.filter_size==filter_sizes{i};
+%             rows=t_avg{k}(idx, :);
+%             % count means
+%             PSNR_mean=mean(rows{:,"PSNR"});
+%             delta_PSNR_mean=mean(rows{:,"delta_PSNR"});
+%             SSIM_mean=mean(rows{:,"SSIM"});
+%             delta_SSIM_mean=mean(rows{:,"delta_SSIM"});
+%             brisque_mean=mean(rows{:,"im_brisque"});
+%             delta_brisque_mean=mean(rows{:,"delta_brisque"});
+%             % save results to the table
+%             t_avg_res{k}(end+1,:)={rows.type(1),rows.method(1), ...
+%                     rows.filter_size(1), rows.jpg_PSNR(1), PSNR_mean, delta_PSNR_mean, rows.jpg_SSIM(1),...
+%                     SSIM_mean, delta_SSIM_mean, rows.jpg_brisque(1), brisque_mean, delta_brisque_mean};
+%     end
+% end
 
 %% save results to the csv file [methods{i}_filter_means.csv] 
 % Path to the folder for results tables 
-folder_csv ='..\Results\Tables\Mean\';
+folder_csv ='..\Results\Tables\Mean\Q30\';
 
 % gaussian filter
 for i=1:length(t_avg_res)
     writetable(t_avg_res{i}, string(strcat(folder_csv,string(methods{i}),'_avg_means.csv'))); 
 end
 
-% avg filter
-for i=1:length(t_gauss_res)
-     writetable(t_gauss_res{i}, strcat(folder_csv, string(methods{i}),'_gauss_means.csv'));
-end
+% % avg filter
+% for i=1:length(t_gauss_res)
+%      writetable(t_gauss_res{i}, strcat(folder_csv, string(methods{i}),'_gauss_means.csv'));
+% end
 
 %% Create heatmaps
 % filepath to the results
-folder_heatmaps='..\Results\Tables\Heatmaps\';
+folder_heatmaps='..\Results\Tables\Heatmaps\Q30\';
 
 % gaussian filter
 % columns with metrics
@@ -120,17 +120,17 @@ end
 
 % avg filter
 % columns with metrics
-columns_avg={5; 6; 8; 9; 11; 12};
-
-for i=1:length(t_avg_res)
-    for j=1:length(columns_avg)
-         % extract the column's name
-         column_name=t_avg_res{i}.Properties.VariableNames{columns_avg{j}};
-         % create a heatmap
-         h=heatmap(t_avg_res{i},"filter_size","filter_size", ColorVariable=column_name);
-         % save the heatmap
-         exportgraphics(h, strcat(folder_heatmaps,column_name,"_",methods{i},"_","avg.jpg"))
-    end
-end
+% columns_avg={5; 6; 8; 9; 11; 12};
+% 
+% for i=1:length(t_avg_res)
+%     for j=1:length(columns_avg)
+%          % extract the column's name
+%          column_name=t_avg_res{i}.Properties.VariableNames{columns_avg{j}};
+%          % create a heatmap
+%          h=heatmap(t_avg_res{i},"filter_size","filter_size", ColorVariable=column_name);
+%          % save the heatmap
+%          exportgraphics(h, strcat(folder_heatmaps,column_name,"_",methods{i},"_","avg.jpg"))
+%     end
+% end
 
 %% Create boxplots

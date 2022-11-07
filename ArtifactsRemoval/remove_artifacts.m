@@ -34,10 +34,51 @@ classdef remove_artifacts
                     im_res = run_multilevel_tresholding(obj);
                 case 'fixed_multilevel_tresholding'
                     im_res = run_fixed_multilevel_tresholding(obj);
+                case 'Canny'
+                    im_res = run_canny(obj);
               end  
 
               %% cast to uint8
               im_res = uint8(im_res);
+        end
+
+        function im_res = run_canny(obj)
+            im=obj.Image;
+            filter_type=obj.FilterType;
+            filter_size=obj.FilterSize;
+            sigm=obj.Sigma;
+            [n, m, d] = size(im);
+            all_edges = zeros(n, m, d, 'logical');
+            filt=filters(filter_type, filter_size, sigm);
+
+            %% detect all edges for each image layer
+            for i=1:d  
+                %% extract a layer 
+                layer = im(:,:,i);
+                
+                %% count gradients        
+                [gmag, ~] = imgradient(layer, 'central');
+                gmag_grayscale = mat2gray(gmag);
+                
+                %% detect edges
+                all_edges(:,:,i) = edge(gmag_grayscale,'Canny');
+                imshow(all_edges(:,:,i));
+            end
+
+            %% make a map of the edges 
+            im_edges = logical(sum(all_edges, 3) == 3); % sum ones 
+            im_edges = additional_functions.delete_false_edges(im_edges, n, m, obj.CutPoint); 
+            map_edges = double(~im_edges);
+            
+            %% make a filter based on the chosen parameters
+            filter_mask=make_filter(filt);
+        
+            %% make a weight map 
+            W = imfilter(map_edges, filter_mask, 'symmetric', 'conv');
+            
+            %% filter whole image
+            im_res = imfilter(double(im) .* map_edges, ...
+                filter_mask, 'symmetric', 'conv') ./ W;
         end
 
         function im_res = run_otsu(obj)

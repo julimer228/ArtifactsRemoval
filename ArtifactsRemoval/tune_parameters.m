@@ -6,16 +6,15 @@ imPath = '..\BreCaHAD\images\*.tif';
 imFiles = dir(imPath);
 
 % set a path for result images
-ImageFolderResImg = '..\Results\Images\';
+imageFolder = '..\Results\ImagesQ10\';
 
 %set a path for result .csv files
-FolderCSV ='..\Results\Tables\Raw\';
+folderCSV ='..\Results\Tables\Raw\Q10\';
 
 %% make parameter sets
-use_maps = {1; 0};
 sigmas = {0.4 ; 0.7 ; 1.1 ; 1.4 ; 1.7 ; 2};
-filter_sizes = {2 ; 4 ; 6 ; 8 ; 10 ; 12};
-methods = {'otsu', 'multilevel_tresholding', 'fixed_multilevel_tresholding'};
+filter_sizes = {3 ; 5 ; 7 ; 9 ; 11 ; 13};
+methods = {'otsu', 'multilevel_tresholding', 'fixed_multilevel_tresholding'}; %"canny"
 
 %% make a tables for the results
 % gaussian filter
@@ -58,7 +57,7 @@ for ind=1:length(imFiles)
     %% count quality metrics for the jpg image
     [jpg_ssim, jpg_psnr, jpg_brisque] = quality_metrics.count_metrics(im_jpg, im_org);
 
-    %% run gaussian filter 
+    % run gaussian filter 
     for i=1:length(methods)
         for j=1:length(sigmas) 
             for k=1:length(filter_sizes)
@@ -80,9 +79,9 @@ for ind=1:length(imFiles)
 
                 % save image to a file
                 % [gauss_method_s{sigma}_f{filter_size}_name.jpg]
-                imgName = string(strcat(ImageFolderResImg,'gauss_',methods{i}, ...
+                imgName = string(strcat(imageFolder,'gauss_',methods{i}, ...
                     '_s_',string(sigmas{j}),'_f_',string(filter_sizes{k}),im_name(1),'.png')) ;
-                imwrite(im,imgName); 
+                %imwrite(im,imgName); 
             end
         end
     end
@@ -110,7 +109,7 @@ for ind=1:length(imFiles)
 
                 % save image to a file
                 % [avg_method_f{filter_size}_name.jpg]
-                imgName = string(strcat(ImageFolderResImg,'avg_',methods{i},'_f_',...
+                imgName = string(strcat(imageFolder,'avg_',methods{i},'_f_',...
                     string(filter_sizes{j}),'_',im_name(1),'.png')) ;
                 imwrite(im,imgName); 
         end
@@ -118,11 +117,13 @@ for ind=1:length(imFiles)
 end
 
 %% save results to the csv file [methods{i}_filter.csv] 
+%% average filter
 for i=1:length(t_tabs_avg)
-    writetable(t_tabs_avg{i}, string(strcat(FolderCSV,string(methods{i}),'_avg.csv'))); 
+    writetable(t_tabs_avg{i}, string(strcat(folderCSV,string(methods{i}),'_avg.csv'))); 
 end
 
+%% gaussian filter
 for i=1:length(t_tabs_gauss)
-     writetable(t_tabs_gauss{i}, strcat(FolderCSV, string(methods{i}),'_gauss.csv'));
+     writetable(t_tabs_gauss{i}, strcat(folderCSV, string(methods{i}),'_gauss.csv'));
 end
 

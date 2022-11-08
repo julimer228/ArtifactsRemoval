@@ -6,10 +6,10 @@ imPath = '..\BreCaHAD\images\*.tif';
 imFiles = dir(imPath);
 
 % set a path for result images
-imageFolder = '..\Results\ImagesQ10\';
+imageFolder = '..\Results\Images\';
 
 %set a path for result .csv files
-folderCSV ='..\Results\Tables\Raw\Q10\';
+folderCSV ='..\Results\Tables\Raw\';
 
 %% make parameter sets
 sigmas = {0.4 ; 0.7 ; 1.1 ; 1.4 ; 1.7 ; 2};
@@ -110,14 +110,14 @@ for ind=1:length(imFiles)
                 % save image to a file
                 % [avg_method_f{filter_size}_name.jpg]
                 imgName = string(strcat(imageFolder,'avg_',methods{i},'_f_',...
-                    string(filter_sizes{j}),'_',im_name(1),'.png')) ;
+                    string(filter_sizes{j}),'_',im_name(1),'.jpg')) ;
                 imwrite(im,imgName); 
         end
     end
 end
 
-%% save results to the csv file [methods{i}_filter.csv] 
-%% average filter
+% save results to the csv file [methods{i}_filter.csv] 
+% average filter
 for i=1:length(t_tabs_avg)
     writetable(t_tabs_avg{i}, string(strcat(folderCSV,string(methods{i}),'_avg.csv'))); 
 end

@@ -12,7 +12,6 @@ t_names = {'VariableNames', ["type", "method", "sigma", ...
     "filter_size", "jpg_PSNR", "PSNR", "deltaPSNR","jpg_SSIM","SSIM",...
     "deltaSSIM", "jpg_brisque", "brisque", "deltaBrisque"]};
 
-compare_table = table(t_size{:}, t_vars{:}, t_names{:});
 
 % loop over the quality params
 for qual_idx=1:length(quality)
@@ -20,6 +19,7 @@ for qual_idx=1:length(quality)
     folder_csv =strcat("..\Results\Tables\Mean\",quality(qual_idx),"\*.csv");
     files = dir(folder_csv);
 
+    compare_table = table(t_size{:}, t_vars{:}, t_names{:});
     % loop over tables with means
     for j=1:length(files)
         % load table
@@ -27,6 +27,7 @@ for qual_idx=1:length(quality)
         f_name = [files(j).folder '\' files(j).name];
         tab = readtable(f_name);
 
+       
         % copy rows
         for k=1:height(tab)
             if(tab.type(1) == "avg")
@@ -40,9 +41,9 @@ for qual_idx=1:length(quality)
             end
         end
     end
+
     % sort rows 
     compare_table = sortrows (compare_table,{'deltaPSNR','deltaSSIM', 'deltaBrisque'},{'descend','descend', 'ascend'});
-
     % save result table
     filepath =strcat("..\Results\Tables\Sorted\",quality(qual_idx),"_sorted.csv");   
     writetable(compare_table,filepath); 

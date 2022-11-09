@@ -34,7 +34,7 @@ classdef remove_artifacts
                     im_res = run_multilevel_tresholding(obj);
                 case 'fixed_multilevel_tresholding'
                     im_res = run_fixed_multilevel_tresholding(obj);
-                case 'Canny'
+                case 'canny'
                     im_res = run_canny(obj);
               end  
 

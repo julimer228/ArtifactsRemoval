@@ -1,4 +1,5 @@
 %% script to process results
+% quality of jpg images
 quality = ["Q10"; "Q30"; "Q50"; "Q70"; "Q90"];
 for qual_idx=1:length(quality)
     % load data from table
@@ -104,7 +105,7 @@ for qual_idx=1:length(quality)
     % filepath to the results
     folder_heatmaps=strcat("..\Results\Tables\Heatmaps\",quality(qual_idx));
     
-    % gaussian filter
+    %% gaussian filter
     % columns with metrics
     columns_gauss={6; 7; 9; 10; 12; 13};
     
@@ -134,4 +135,9 @@ for qual_idx=1:length(quality)
         end
     end
 end
+
 %% Create boxplots
+
+
+
+

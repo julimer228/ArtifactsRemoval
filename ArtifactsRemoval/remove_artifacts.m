@@ -8,11 +8,12 @@ classdef remove_artifacts
         FilterSize {mustBeNumericOrLogical}
         FilterType 
         TresholdingMethod 
+        RemoveBlackPixels
     end
     
     methods
         function obj = remove_artifacts(im, cut_point,sigm, filter_size,...
-                filter_type, tresholding)
+                filter_type, tresholding, remove_black_pixels)
             %REMOVE_ARTIFACTS Construct an instance of the remove_artifacts
             %class
             obj.CutPoint=cut_point;
@@ -21,6 +22,7 @@ classdef remove_artifacts
             obj.FilterSize=filter_size;
             obj.FilterType=filter_type;
             obj.TresholdingMethod=tresholding;
+            obj.RemoveBlackPixels=remove_black_pixels;
         end
         
         function im_res = run_artifacts_removal(obj)
@@ -40,6 +42,12 @@ classdef remove_artifacts
 
               %% cast to uint8
               im_res = uint8(im_res);
+
+              %% Remove black pixels
+              if(obj.RemoveBlackPixels==true)
+                  im_res(im_res==0)=obj.Image(im_res==0);
+                  imshow(im_res);
+              end
         end
 
         function im_res = run_canny(obj)

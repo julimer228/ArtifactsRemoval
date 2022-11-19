@@ -1,7 +1,7 @@
 %% Compare results for each quality
 % maximize delta PSNR, delta SSIM, minimize brisque
 % jpg quality parameters
-quality = ["Q10"; "Q30"; "Q50"; "Q70"; "Q90"];
+quality = ["Q10" "Q30" "Q50" "Q70" "Q90"];
 
 % create table for results
 t_size = {'Size' [0 13]};

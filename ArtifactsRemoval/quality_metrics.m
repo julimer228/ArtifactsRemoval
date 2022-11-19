@@ -1,36 +1,17 @@
 classdef quality_metrics
-    % Summary of this class goes here
-    %   Detailed explanation goes here
+    %QUALITY_METRICS Static class used to calculate quality metrics and
+    % percentage difference of results for image before and after artifacts
+    % removal
     methods (Static)
+        %COUNT_METRICS function to count image quality metrics
         function [im_ssim, im_psnr, im_brisque] = count_metrics(im, im_org)
-            im_ssim=round(ssim(im, im_org), 5);
-            im_psnr=round(psnr(im, im_org), 5);
-            im_brisque=round(brisque(im),5);
-            %im_scc=round(quality_metrics.count_scc(im, im_org),5);
-            %im_mse=round(quality_metrics.count_mse(im, im_org),5);
-            %im_multissim=round(quality_metrics.count_multissim(im, im_org), 5);
+            im_ssim=round(ssim(im, im_org), 3);
+            im_psnr=round(psnr(im, im_org), 3);
+            im_brisque=round(brisque(im),3);
         end
 
-        function im_scc = count_scc(im, im_org)
-            im_gray=rgb2gray(im); % convert to a gray scale
-            im_org_gray=rgb2gray(im_org);
-            im_scc=corr2(im_gray, im_org_gray); % count correlation
-        end
-        
-        function im_mse=count_mse(im, im_org)
-            im_gray=rgb2gray(im); % convert to a gray scale
-            im_org_gray=rgb2gray(im_org);
-            im_mse=mse(im_gray, im_org_gray); 
-        end
-        
-        function im_multissim=count_multissim(im, im_org)
-            %COUNT_MULTISSIM Multiscale structural similarity 
-            % the closer to 1 the better quality
-            im_gray=rgb2gray(im); % convert to a gray scale
-            im_org_gray=rgb2gray(im_org);
-            im_multissim=multissim(im_gray, im_org_gray); 
-        end
-        
+        %COUNT_DELTA function to count percentage difference between
+        %quality metrics for jpg image and image after artifacts removal
         function delta = count_delta(im_metric, jpg_metric)
             delta=round((im_metric - jpg_metric) / jpg_metric * 100, 5);
         end

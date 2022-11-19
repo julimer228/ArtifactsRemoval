@@ -1,13 +1,13 @@
 classdef filters
-    %FILTER Creates a filter based on the name
-    %   Creates a filter mask of different types
-    
+    %FILTERS Creates a filter based on the name
+    %Creates a filter mask of different types
+
     properties
-        Type % type of the filter 
+        Type % type of the filter
         Size {mustBeNumericOrLogical} % size of the filter or logical value false if not used
         Sigma {mustBeNumericOrLogical} % sigma or the logical value false if not used
     end
-    
+
     methods
         function obj = filters(type, size, sigma)
             %FILTER Construct an instance of this class
@@ -31,13 +31,13 @@ classdef filters
         function mask = gauss_filter(obj)
             %GAUSS_FILTER Returns a gaussian filter mask
             % Creates a gaussian filter mask with the given size and sigma
-            % Substract 1 from filter size, because we have to take 0
-            % coordinate
+            % Substract 1 from filter size, because we have to calculate
+            % coordinates
             f_range=obj.Size - 1;
             sigm=obj.Sigma;
             [x, y] = meshgrid(-f_range/2:f_range/2, -f_range/2:f_range/2);
             to_be_exp = -(x.^2+y.^2) / (2*sigm*sigm);
-            mask = exp(to_be_exp) / (2*pi*sigm*sigm);          
+            mask = exp(to_be_exp) / (2*pi*sigm*sigm);
         end
 
         function mask = avg_filter(obj)

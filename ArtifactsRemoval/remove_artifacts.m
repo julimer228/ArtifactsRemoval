@@ -64,8 +64,11 @@ classdef remove_artifacts
                 [gmag, ~] = imgradient(layer, 'central');
                 gmag_grayscale = mat2gray(gmag);
 
+                %% Count treshold
+                [T, ~]=graythresh(gmag_grayscale);
+               
                 %% detect edges
-                all_edges(:,:,i) = edge(gmag_grayscale,'Canny');
+                all_edges(:,:,i) = edge(gmag_grayscale,'Canny',T);
             end
 
             %% make a map of the edges

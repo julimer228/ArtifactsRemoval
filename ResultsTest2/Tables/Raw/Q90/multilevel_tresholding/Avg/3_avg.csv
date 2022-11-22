@@ -1,0 +1,2 @@
+name,type,method,filter_size,jpg_PSNR,PSNR,delta_PSNR,jpg_SSIM,SSIM,delta_SSIM,jpg_brisque,im_brisque,delta_brisque
+Case_1-01,avg,multilevel_tresholding,3,40.124,35.034,-12.68567,0.993,0.989,-0.40282,48.578,53.499,10.1301

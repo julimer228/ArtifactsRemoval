@@ -51,12 +51,6 @@ for q=1:length(quality)
     for m=1:length(methods)
         folder_g=strcat(image_folder_gauss,'/',methods(m),'/');
         folder_a=strcat(image_folder_avg,'/',methods(m),'/');
-        if isfolder(folder_g) == false
-            mkdir(folder_g);
-        end
-        if isfolder(folder_a) == false
-            mkdir(folder_a);
-        end
     end
 
     for i=1:length(methods)

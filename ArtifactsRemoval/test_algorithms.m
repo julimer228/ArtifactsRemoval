@@ -7,13 +7,17 @@ im_org_uint16 = imread([im_path '\' im_file]);
 im_org = additional_functions.conv_to_uint8(im_org_uint16);
 
 %% compress to jpg
-imwrite(im_org, 'jpg_conv.jpg', 'jpg', 'Quality', 30);
-im_jpg = imread('jpg_conv.jpg');
+imwrite(im_org, 'jpg_conv.jpg', 'jpg', 'Quality', 10);
+im_jpg= imread('jpg_conv.jpg');
 
 %% remove jpg compression artifacts
-method="canny";
+% sigmas = [0.4 0.7 1.1 1.4 1.7 2 2.3 2.6 2.9];
+% filter_sizes = [3 5 7 9 11 13 15 17 19];
+% methods = ["canny" "multilevel_tresholding" "fixed_multilevel_tresholding" "otsu" 
+%"blurr" "experimental" "ex2"];
+method="weights";
 sigma=1.1;
-filter_size=15;
+filter_size=9;
 filter_type="gauss";
 
 rem = remove_artifacts(im_jpg, [1 1], sigma,...
@@ -22,19 +26,35 @@ rem = remove_artifacts(im_jpg, [1 1], sigma,...
 im=run_artifacts_removal(rem);
 
 %% compare results img
-[jpg_ssim, jpg_psnr, jpg_brisque] = quality_metrics.count_metrics(im_jpg, im_org);
-[im_ssim, im_psnr, im_brisque] = quality_metrics.count_metrics(im, im_org);
+[jpg_ssim, jpg_psnr, jpg_brisque, jpg_niqe] = quality_metrics.count_metrics(im_jpg, im_org, model);
+[im_ssim, im_psnr, im_brisque, im_niqe] = quality_metrics.count_metrics(im, im_org, model);
 delta_psnr = quality_metrics.count_delta(im_psnr, jpg_psnr);
 delta_ssim = quality_metrics.count_delta(im_ssim, jpg_ssim);
 delta_brisque = quality_metrics.count_delta(im_brisque, jpg_brisque);
-
+delta_niqe = quality_metrics.count_delta(im_niqe, jpg_niqe);
 %% crop images
-rect=[32 32 64 64];
+rect=[32 32 1024 1024];
+crop_org=imcrop(im_org, rect);
+crop_jpg=imcrop(im_jpg, rect);
+crop_im=imcrop(im, rect);
+img_array={crop_jpg;crop_org; crop_im};
+montage(img_array,'Size',[1 3]);
+
+rect=[32 32 128 128];
 crop_org=imcrop(im_org, rect);
 crop_jpg=imcrop(im_jpg, rect);
 crop_im=imcrop(im, rect);
 
 %% mount images
-img_array={crop_org; crop_jpg; crop_im};
+img_array={crop_jpg;crop_org; crop_im};
 montage(img_array,'Size',[1 3]);
 
+% %%
+% setDir = fullfile("C:\Users\Julia\Documents\GitHub\ArtifactsRemoval\BreCaHAD\images");
+% imds = imageDatastore(setDir,'FileExtensions',{'.tif'});
+% model = fitniqe(imds);
+% %
+% 
+% niqe_im = niqe(im,model);
+% niqe_jpg = niqe(im_jpg, model);
+% niqe_org = niqe(im_org, model);

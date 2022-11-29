@@ -6,35 +6,41 @@ im_path = '..\BreCaHAD\images\*.tif';
 im_files = dir(im_path);
 
 % set a path for result images
-image_folder = '..\ResultsTest2\Images\Q';
+image_folder = '..\ResultsCorrected\Images\Q';
 
 %set a path for result .csv files
-folder_csv ='..\ResultsTest2\Tables\Raw\Q';
+folder_csv ='..\ResultsCorrected\Tables\Raw\Q';
+
+
+%train NIQE metric
+%model=quality_metrics.train_niqe(im_path);
+
+
 
 %% make a tables for the results
 % gaussian filter
-t_size_gauss = {'Size' [0 14]};
+t_size_gauss = {'Size' [0 17]};
 t_vars_gauss = {'VariableTypes', ["string", "string", "string", "double", ...
-    "double", "double", "double", "double","double","double","double", "double", "double", "double"]};
+    "double", "double", "double", "double","double","double","double", "double", "double", "double","double", "double", "double"]};
 
 t_names_gauss = {'VariableNames', ["name", "type", "method", "sigma", ...
     "filter_size", "jpg_PSNR", "PSNR", "delta_PSNR","jpg_SSIM","SSIM",...
-    "delta_SSIM", "jpg_brisque", "im_brisque", "delta_brisque"]};
+    "delta_SSIM", "jpg_brisque", "im_brisque", "delta_brisque", "jpg_niqe", "im_niqe", "delta_niqe"]};
 
 t_res_gauss = table(t_size_gauss{:}, t_vars_gauss{:}, t_names_gauss{:});
 
 % average filter
-t_size_avg = {'Size' [0 13]};
+t_size_avg = {'Size' [0 16]};
 t_vars_avg = {'VariableTypes', ["string", "string", "string", ...
-    "double", "double", "double", "double","double","double","double","double","double","double"]};
+    "double", "double", "double","double","double","double","double","double","double","double","double", "double", "double"]};
 
 t_names_avg = {'VariableNames', ["name", "type", "method", ...
     "filter_size", "jpg_PSNR", "PSNR", "delta_PSNR","jpg_SSIM","SSIM",...
-    "delta_SSIM", "jpg_brisque", "im_brisque", "delta_brisque"]};
+    "delta_SSIM", "jpg_brisque", "im_brisque", "delta_brisque", "jpg_niqe", "im_niqe", "delta_niqe"]};
 
 t_res_avg = table(t_size_avg{:}, t_vars_avg{:}, t_names_avg{:});
 
-quality=[10 30 50 70 90];
+quality=[90];
 for q=1:length(quality)
     % Check if folders exist if not, create them
     image_folder_gauss=strcat(image_folder, string(quality(q)),'\Gauss\');
@@ -42,9 +48,9 @@ for q=1:length(quality)
     folder_csv_q=strcat(folder_csv, string(quality(q)),'\');
 
     %% make parameter sets
-    sigmas = [0.4]% 0.7 1.1 1.4 1.7 2 2.3 2.6 2.9];
-    filter_sizes = [3] % 5 7 9 11 13 15 17 19];
-    methods = ["otsu" "multilevel_tresholding" "fixed_multilevel_tresholding" "otsu"];
+    sigmas =[0.4 0.7 1.1 1.4 1.7 2 2.3 2.6 2.9];
+    filter_sizes =[3 5 7 9 11 13 15 17 19];
+    methods = ["weights" "multi" "blurr" "otsu"];%"multilevel_tresholding" "fixed_multilevel_tresholding" "otsu"];
     cut_point=[1 1];
     use_sigma_avg=false;
 
@@ -78,7 +84,7 @@ for q=1:length(quality)
             mkdir(folder_csv_q_m_gauss);
         end
 
-        for ind=1:1 %length(im_files)
+        for ind=1:length(im_files)
             %% read an image and convert it into uint8
             im_name = strsplit(im_files(ind).name, '.');
             name=string(im_name(1));
@@ -92,7 +98,7 @@ for q=1:length(quality)
             delete('jpg_conv.jpg');
 
             %% count quality metrics for the jpg image
-            [jpg_ssim, jpg_psnr, jpg_brisque] = quality_metrics.count_metrics(im_jpg, im_org);
+            [jpg_ssim, jpg_psnr, jpg_brisque, jpg_niqe] = quality_metrics.count_metrics(im_jpg, im_org,model);
 
             % run filters
             parfor k=1:length(filter_sizes)
@@ -103,21 +109,22 @@ for q=1:length(quality)
                     im=run_artifacts_removal(rem);
 
                     % count metrics
-                    [im_ssim, im_psnr, im_brisque] = quality_metrics.count_metrics(im, im_org);
+                    [im_ssim, im_psnr, im_brisque, im_niqe] = quality_metrics.count_metrics(im, im_org,model);
                     delta_psnr = quality_metrics.count_delta(im_psnr, jpg_psnr);
                     delta_ssim = quality_metrics.count_delta(im_ssim, jpg_ssim);
                     delta_brisque = quality_metrics.count_delta(im_brisque, jpg_brisque);
-
+                    delta_niqe=quality_metrics.count_delta(im_niqe, jpg_niqe);
                     % save row to the table
                     t_tabs_gauss{k}(end+1,:) = {name, 'gauss',method, ...
                         sigmas(j), filter_sizes(k), jpg_psnr, im_psnr, delta_psnr, jpg_ssim,...
-                        im_ssim, delta_ssim, jpg_brisque, im_brisque, delta_brisque};
+                        im_ssim, delta_ssim, jpg_brisque, im_brisque, delta_brisque, jpg_niqe,...
+                        im_niqe, delta_niqe};
 
                     % save image to a file
                     % [gauss_method_s{sigma}_f{filter_size}_name.jpg]
                     img_rem_name_gauss = string(strcat(image_folder_gauss,'\',method,'\', ...
-                        's_',string(sigmas(j)),'_f_',string(filter_sizes(k)),name,'.jpg')) ;
-                    imwrite(im,img_rem_name_gauss);
+                        's_',string(sigmas(j)),'_f_',string(filter_sizes(k)),name,'.png')) ;
+                    imwrite(im,img_rem_name_gauss,"png");
                 end
 
                 %Average filter
@@ -127,142 +134,28 @@ for q=1:length(quality)
                 im_avg=run_artifacts_removal(rem_avg);
 
                 % count metrics
-                [im_ssim_avg, im_psnr_avg, im_brisque_avg] = quality_metrics.count_metrics(im_avg, im_org);
+                [im_ssim_avg, im_psnr_avg, im_brisque_avg, im_niqe] = quality_metrics.count_metrics(im_avg, im_org,model);
                 delta_psnr_avg = quality_metrics.count_delta(im_psnr_avg, jpg_psnr);
                 delta_ssim_avg = quality_metrics.count_delta(im_ssim_avg, jpg_ssim);
                 delta_brisque_avg = quality_metrics.count_delta(im_brisque_avg, jpg_brisque);
-
+                delta_niqe=quality_metrics.count_delta(im_niqe, jpg_niqe);
                 % save results to the table
                 t_tabs_avg{k}(end+1,:) = {name, 'avg',method, ...
                     filter_sizes(k), jpg_psnr, im_psnr_avg, delta_psnr_avg, jpg_ssim,...
-                    im_ssim_avg, delta_ssim_avg, jpg_brisque, im_brisque_avg, delta_brisque_avg};
+                    im_ssim_avg, delta_ssim_avg, jpg_brisque, im_brisque_avg, delta_brisque_avg,...
+                    jpg_niqe, im_niqe, delta_niqe};
 
                 % save image to a file
                 % [avg_method_f{filter_size}_name.jpg]
                 img_rem_name_avg = string(strcat(image_folder_avg,'\',method,'\','f_',...
-                    string(filter_sizes(k)),'_',name,'.jpg')) ;
+                    string(filter_sizes(k)),'_',name,'.png')) ;
                 imwrite(im_avg,img_rem_name_avg);
             end
         end
-        %% save results to the csv file [methods{i}_filter.csv]
+        %% save results to the csv file 
         parfor idx=1:length(filter_sizes)
             writetable(t_tabs_avg{idx}, string(strcat(folder_csv_q_m_avg,string(filter_sizes(idx)),'_avg.csv')));
             writetable(t_tabs_gauss{idx}, strcat(folder_csv_q_m_gauss,string(filter_sizes(idx)),'_gauss.csv'));
-        end
-    end
-end
-
-%% Process results, count means, create heatmaps and boxplots
-% tables for results
-% gaussian filter
-t_size_gauss = {'Size' [0 13]};
-t_vars_gauss = {'VariableTypes', ["string", "string", "double", ...
-    "double", "double", "double", "double","double","double","double", "double", "double", "double"]};
-
-t_names_gauss = {'VariableNames', ["type", "method", "sigma", ...
-    "filter_size", "jpg_PSNR", "PSNR", "deltaPSNR","jpg_SSIM","SSIM",...
-    "deltaSSIM", "jpg_brisque", "brisque", "deltaBrisque"]};
-
-gauss_mean_table = table(t_size_gauss{:}, t_vars_gauss{:}, t_names_gauss{:});
-t_gauss_res={gauss_mean_table, gauss_mean_table, gauss_mean_table, gauss_mean_table};
-
-% avg filter
-t_size_avg = {'Size' [0 12]};
-t_vars_avg = {'VariableTypes', ["string", "string", ...
-    "double", "double", "double", "double","double","double","double", "double", "double", "double"]};
-
-t_names_avg = {'VariableNames', ["type", "method", ...
-    "filter_size", "jpg_PSNR", "PSNR", "deltaPSNR","jpg_SSIM","SSIM",...
-    "deltaSSIM", "jpg_brisque", "brisque", "deltaBrisque"]};
-
-avg_mean_table = table(t_size_avg{:}, t_vars_avg{:}, t_names_avg{:});
-t_avg_res={avg_mean_table, avg_mean_table, avg_mean_table, avg_mean_table};
-
-for q=1:length(quality)
-    %% count means for gaussian filtration results
-    for k=1:length(methods)
-        for j=1:length(filter_sizes)
-            for i=1:length(sigmas)
-                % extract rows
-                idx=t_tabs_gauss{k}.sigma==sigmas(i) & t_tabs_gauss{k}.filter_size==filter_sizes(j);
-                rows=t_tabs_gauss{k}(idx, :);
-                % count means
-                PSNR_mean=mean(rows{:,"PSNR"});
-                delta_PSNR_mean=mean(rows{:,"delta_PSNR"});
-                SSIM_mean=mean(rows{:,"SSIM"});
-                delta_SSIM_mean=mean(rows{:,"delta_SSIM"});
-                brisque_mean=mean(rows{:,"im_brisque"});
-                delta_brisque_mean=mean(rows{:,"delta_brisque"});
-                % save results to the table
-                t_gauss_res{k}(end+1,:)={rows.type(1),rows.method(1), ...
-                    rows.sigma(1), rows.filter_size(1), rows.jpg_PSNR(1), PSNR_mean, delta_PSNR_mean, rows.jpg_SSIM(1),...
-                    SSIM_mean, delta_SSIM_mean, rows.jpg_brisque(1), brisque_mean, delta_brisque_mean};
-            end
-            % Average filter
-            % extract rows
-            idx_avg=t_tabs_avg{k}.filter_size==filter_sizes(j);
-            rows_avg=t_tabs_avg{k}(idx_avg, :);
-            % count means
-            PSNR_mean_avg=mean(rows{:,"PSNR"});
-            delta_PSNR_mean_avg=mean(rows{:,"delta_PSNR"});
-            SSIM_mean_avg=mean(rows{:,"SSIM"});
-            delta_SSIM_mean_avg=mean(rows{:,"delta_SSIM"});
-            brisque_mean_avg=mean(rows{:,"im_brisque"});
-            delta_brisque_mean_avg=mean(rows{:,"delta_brisque"});
-            % save results to the table
-            t_avg_res{k}(end+1,:)={rows.type(1),rows.method(1), ...
-                rows.filter_size(1), rows.jpg_PSNR(1), PSNR_mean_avg, delta_PSNR_mean_avg, rows.jpg_SSIM(1),...
-                SSIM_mean_avg, delta_SSIM_mean_avg, rows.jpg_brisque(1), brisque_mean_avg, delta_brisque_mean_avg};
-        end
-    end
-
-    %% save results to the csv file [methods{i}_filter_means.csv]
-    % Path to the folder for results tables
-    folder_means =strcat("..\ResultsTest\Tables\Mean\Q",string(quality(q)),"\");
-
-    if isfolder(folder_means) == false
-        mkdir(folder_means)
-    end
-
-    parfor i=1:length(methods)
-        writetable(t_avg_res{i}, string(strcat(folder_means,string(methods{i}),'_avg_means.csv')));
-        writetable(t_gauss_res{i}, strcat(folder_means, string(methods{i}),'_gauss_means.csv'));
-        
-    end
-
-    %% Create heatmaps
-    % filepath to the results
-    folder_heatmaps_gauss=strcat("..\ResultsTest\Tables\Heatmaps\Q",string(quality(q)),"\Gauss\");
-    folder_heatmaps_avg=strcat("..\ResultsTest\Tables\Heatmaps\Q",string(quality(q)),"\Avg\");
-
-    if isfolder(folder_heatmaps_gauss) == false
-        mkdir(folder_heatmaps_gauss)
-    end
-
-    if isfolder(folder_heatmaps_avg) == false
-        mkdir(folder_heatmaps_avg)
-    end
-
-    % columns with metrics
-    parfor i=1:length(methods)
-        columns_gauss=[6 7 9 10 12 13];
-        columns_avg=[5 6 8 9 11 12];
-        for j=1:length(columns_gauss)
-            % Gauss
-            % extract the column's name
-            column_name=t_gauss_res{i}.Properties.VariableNames{columns_gauss(j)};
-            % create a heatmap
-            h=heatmap(t_gauss_res{i},"sigma","filter_size", ColorVariable=column_name);
-            % save the heatmap
-            exportgraphics(h, strcat(folder_heatmaps_gauss,methods{i},"_",column_name,".jpg"));
-
-            % Avg
-            % extract the column's name
-            column_name=t_avg_res{i}.Properties.VariableNames{columns_avg(j)};
-            % create a heatmap
-            h=heatmap(t_avg_res{i},1,"filter_size", ColorVariable=column_name);
-            % save the heatmap
-            exportgraphics(h, strcat(folder_heatmaps_avg,methods{i},"_",column_name,".jpg"))
         end
     end
 end

@@ -1,2 +1,0 @@
-name,type,method,sigma,filter_size,jpg_PSNR,PSNR,delta_PSNR,jpg_SSIM,SSIM,delta_SSIM,jpg_brisque,im_brisque,delta_brisque
-Case_1-01,gauss,otsu,0.4,3,35.513,33.789,-4.85456,0.982,0.977,-0.50916,52.735,49.081,-6.92898

@@ -2,20 +2,19 @@
 close all; clc
 
 % set a path to the images
-im_path = '..\BreCaHAD\images\*.tif';
+im_path = '..\BreCaHAD\images_example\*.tif';
+im_path_niqe = '..\BreCaHAD\images\*.tif';
 im_files = dir(im_path);
 
 % set a path for result images
-image_folder = '..\ResultsCorrected\Images\Q';
+image_folder = '..\ResultsExample\Images\Q';
 
 %set a path for result .csv files
-folder_csv ='..\ResultsCorrected\Tables\Raw\Q';
+folder_csv ='..\ResultsExample\Tables\Raw\Q';
 
 
 %train NIQE metric
-%model=quality_metrics.train_niqe(im_path);
-
-
+model=quality_metrics.train_niqe(im_path_niqe);
 
 %% make a tables for the results
 % gaussian filter
@@ -40,7 +39,8 @@ t_names_avg = {'VariableNames', ["name", "type", "method", ...
 
 t_res_avg = table(t_size_avg{:}, t_vars_avg{:}, t_names_avg{:});
 
-quality=[90];
+quality=[10 30 50 70 90];
+
 for q=1:length(quality)
     % Check if folders exist if not, create them
     image_folder_gauss=strcat(image_folder, string(quality(q)),'\Gauss\');
@@ -50,7 +50,7 @@ for q=1:length(quality)
     %% make parameter sets
     sigmas =[0.4 0.7 1.1 1.4 1.7 2 2.3 2.6 2.9];
     filter_sizes =[3 5 7 9 11 13 15 17 19];
-    methods = ["weights" "multi" "blurr" "otsu"];%"multilevel_tresholding" "fixed_multilevel_tresholding" "otsu"];
+    methods = ["method_1" "method_2" "method_3" "blurr"];
     cut_point=[1 1];
     use_sigma_avg=false;
 
@@ -84,7 +84,7 @@ for q=1:length(quality)
             mkdir(folder_csv_q_m_gauss);
         end
 
-        for ind=1:length(im_files)
+        for ind=1:3
             %% read an image and convert it into uint8
             im_name = strsplit(im_files(ind).name, '.');
             name=string(im_name(1));

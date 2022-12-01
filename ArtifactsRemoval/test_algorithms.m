@@ -13,9 +13,10 @@ im_jpg= imread('jpg_conv.jpg');
 %% remove jpg compression artifacts
 % sigmas = [0.4 0.7 1.1 1.4 1.7 2 2.3 2.6 2.9];
 % filter_sizes = [3 5 7 9 11 13 15 17 19];
-% methods = ["canny" "multilevel_tresholding" "fixed_multilevel_tresholding" "otsu" 
-%"blurr" "experimental" "ex2"];
-method="weights";
+% methods = ["method_1" "method_2" "method_3" "blurr"]
+% filter = ["avg" "gauss"]
+
+method="method_1";
 sigma=1.1;
 filter_size=9;
 filter_type="gauss";
@@ -49,7 +50,7 @@ crop_im=imcrop(im, rect);
 img_array={crop_jpg;crop_org; crop_im};
 montage(img_array,'Size',[1 3]);
 
-% %%
+% %% niqe model training
 % setDir = fullfile("C:\Users\Julia\Documents\GitHub\ArtifactsRemoval\BreCaHAD\images");
 % imds = imageDatastore(setDir,'FileExtensions',{'.tif'});
 % model = fitniqe(imds);

@@ -7,12 +7,12 @@ classdef remove_artifacts
         Sigma {mustBeNumericOrLogical}
         FilterSize {mustBeNumericOrLogical}
         FilterType
-        TresholdingMethod
+        Method
     end
 
     methods
         function obj = remove_artifacts(im, cut_point,sigm, filter_size,...
-                filter_type, tresholding)
+                filter_type, method)
             %REMOVE_ARTIFACTS Construct an instance of the remove_artifacts
             %class
             obj.CutPoint=cut_point;
@@ -20,99 +20,29 @@ classdef remove_artifacts
             obj.Sigma=sigm;
             obj.FilterSize=filter_size;
             obj.FilterType=filter_type;
-            obj.TresholdingMethod=tresholding;
+            obj.Method=method;
         end
 
         function im_res = run_artifacts_removal(obj)
             %RUN_ARTIFACTS_REMOVAL method removes artifacts
             %   Method removes artifacts with chosen methods and filters
 
-            switch obj.TresholdingMethod
-                case 'otsu'
-                    im_res = run_otsu(obj);
-                case 'multilevel_tresholding'
-                    im_res = run_multilevel_tresholding(obj);
-                case 'fixed_multilevel_tresholding'
-                    im_res = run_fixed_multilevel_tresholding(obj);
-                case 'canny'
-                    im_res = run_canny(obj);
-                case 'multi'
-                    im_res = run_multi_tresh_experimental(obj);
+            switch obj.Method
+                case 'method_1'
+                    im_res = run_method_1(obj);
+                case 'method_2'
+                    im_res = run_method_2(obj);
+                case 'method_3'
+                    im_res = run_method_3(obj);
                 case 'blurr'
-                    im_res=run_blurring(obj);
-                case 'weights'
-                    im_res=run_experimental2(obj);
+                    im_res = run_blurr(obj);
             end
 
             % cast to uint8
             im_res = im2uint8(im_res);
-            % Remove black pixels
-            %im_res(im_res==0)=obj.Image(im_res==0);
         end
 
-        function im_res = run_canny(obj)
-           %RUN_FIXED_MULTILEVEL_TRESHOLDING artifact removal method
-            % function uses multilevel tresholding and Otsu method
-            % in order to create maps of edges in the last step results
-            % of both methods are added together with weights
-            im=obj.Image;
-            filter_type=obj.FilterType;
-            filter_size=obj.FilterSize;
-            sigm=obj.Sigma;
-            filt=filters(filter_type, filter_size, sigm);
-
-            %% preallocate memory
-            [n, m, d] = size(im);
-            all_edges = zeros(n, m, d, 'double'); % now numbers not logical values
-            all_edges_bin=zeros(n,m,d,'logical'); % to detect ones in three channels
-            %% detect all edges for each image layer
-            for i=1:d
-                %% extract a layer
-                layer = im(:,:,i);
-                %% count gradients
-%                 [gmag, ~] = imgradient(layer, 'central');
-%                 gmag_grayscale = mat2gray(gmag);
-                layer=mat2gray(layer)
-                gmag_grayscale=additional_functions.conv_to_uint8(layer);
-                %% detect edges
-                [T, ~]=graythresh(gmag_grayscale); % makes image histogram inside the function
-                [all_edges2(:,:,i), T2] = edge(gmag_grayscale,"canny");
-                all_edges(:,:,i) = edge(gmag_grayscale,"canny");
-                all_edges_bin(:,:,i) =edge(gmag_grayscale,"canny",[0.1*T T]); % imbinarize(gmag_grayscale, 'global'); %Otsu for three channel validation
-
-            end
-
-            %% make a map of the edges ( edge in three channels => 0, compression grid and other => 1 )
-            im_edges = logical(sum(all_edges_bin, 3) == 3);
-            % prepare multilevel tresholding map
-            im_edges = additional_functions.delete_false_edges(im_edges, n, m, obj.CutPoint);
-            %im_edges = imopen(im_edges, strel('square',2));
-            map_edges = imcomplement(im_edges);
-
-            % prepare binary map
-            im_edges_binary=additional_functions.delete_false_edges(im_edges_binary,n,m,obj.CutPoint);
-            %im_edges_binary = imopen(im_edges_binary, strel('square', 2));
-            map_edges_binary=double(~im_edges_binary);
-
-            %% make a filter based on the chosen sigma
-            filter_mask=make_filter(filt);
-
-            %% make a weight maps
-            W1 = imfilter(map_edges, filter_mask, 'symmetric', 'conv');
-            W2 = imfilter(map_edges_binary, filter_mask, 'symmetric', 'conv');
-
-            %% filter whole images
-            im_res_level = imfilter(double(im) .* map_edges, ...
-                filter_mask, 'symmetric', 'conv') ./ W1;
-
-            im_res_bin = imfilter(double(im) .* map_edges_binary, ...
-                filter_mask, 'symmetric', 'conv') ./ W2;
-
-            %% add results with correct weight
-            im_res=im_res_level.*map_edges+(1.-map_edges).*im_res_bin;
-        end
-
-        function im_res = run_otsu(obj)
+        function im_res = run_method_1(obj)
             %RUN_OTSU artifacts removal method
             % function uses otsu algorithm in order to create a map of edges
             im=im2double(obj.Image);
@@ -156,127 +86,7 @@ classdef remove_artifacts
              im_res(isnan(im_res))=im(isnan(im_res));
         end
 
-        function im_res = run_multilevel_tresholding(obj)
-            %RUN_MULTILEVEL_TRESHOLDING artifact removal method
-            % function uses multilevel tresholding in order to create a map of edges
-            im=obj.Image;
-            filter_type=obj.FilterType;
-            filter_size=obj.FilterSize;
-            sigm=obj.Sigma;
-            filt=filters(filter_type, filter_size, sigm);
-
-            %% preallocate memory
-            [n, m, d] = size(im);
-            all_edges = zeros(n, m, d, 'double'); % now numbers not logical values
-            all_edges_bin=zeros(n,m,d,'logical'); % to detect ones in three channels
-            %% detect all edges for each image layer
-            for i=1:d
-                %% extract a layer
-                layer = im(:,:,i);
-                %% count gradients
-                [gmag, ~] = imgradient(layer, 'central');
-                gmag_grayscale = mat2gray(gmag);
-                gmag_grayscale=additional_functions.conv_to_uint8(gmag_grayscale);
-                %% detect edges
-                [T, ~]=graythresh(gmag_grayscale); % makes image histogram inside the function
-                T=T*255.0;
-                gmag_grayscale(gmag_grayscale < T) = 0; % if pixel value is below treshold replace it with 0
-                gmag_grayscale(gmag_grayscale > T) = gmag_grayscale(gmag_grayscale > T) - T;  % (piksel-treshold)
-                gmag_grayscale = double(gmag_grayscale);
-                all_edges(:,:,i) = gmag_grayscale ./(255-T); %(piksel - treshold)/(255-treshold)
-                % or 0/(255-treshold)=0
-                all_edges_bin(:,:,i) = imbinarize(gmag_grayscale, 'global'); %Otsu for three channel validation
-
-            end
-
-            %% make a map of the edges ( edge in three channels => 0, compression grid and other => 1 )
-            im_edges = sum(all_edges, 3);
-            im_edges_binary=logical(sum(all_edges_bin, 3) == 3); % sum ones
-            im_edges=im_edges.*im_edges_binary;
-            im_edges = additional_functions.delete_false_edges(im_edges, n, m, obj.CutPoint);
-            im_edges = imopen(im_edges, strel('square',2));
-            map_edges = imcomplement(im_edges);
-            %% make a filter based on the chosen sigma
-            filter_mask=make_filter(filt);
-
-            %% make a weight map
-            W = imfilter(map_edges, filter_mask, 'symmetric', 'conv');
-
-            %% filter whole image
-            im_res = imfilter(im2double(im) .* map_edges, ...
-                filter_mask, 'symmetric', 'conv') ./ W;
-        end
-
-        function im_res = run_fixed_multilevel_tresholding(obj)
-            %RUN_FIXED_MULTILEVEL_TRESHOLDING artifact removal method
-            % function uses multilevel tresholding and Otsu method
-            % in order to create maps of edges in the last step results
-            % of both methods are added together with weights
-            im=obj.Image;
-            filter_type=obj.FilterType;
-            filter_size=obj.FilterSize;
-            sigm=obj.Sigma;
-            filt=filters(filter_type, filter_size, sigm);
-
-            %% preallocate memory
-            [n, m, d] = size(im);
-            all_edges = zeros(n, m, d, 'double'); % now numbers not logical values
-            all_edges_bin=zeros(n,m,d,'logical'); % to detect ones in three channels
-            %% detect all edges for each image layer
-            for i=1:d
-                %% extract a layer
-                layer = im(:,:,i);
-                %% count gradients
-                [gmag, ~] = imgradient(layer, 'central');
-                gmag_grayscale = mat2gray(gmag);
-                gmag_grayscale=additional_functions.conv_to_uint8(gmag_grayscale);
-                %% detect edges
-                [T, ~]=graythresh(gmag_grayscale); % makes image histogram inside the function
-                T=T*255.0;
-                gmag_grayscale(gmag_grayscale < T) = 0; % if pixel value is below treshold replace it with 0
-                gmag_grayscale(gmag_grayscale > T) = gmag_grayscale(gmag_grayscale > T) - T;  % (piksel-treshold)
-                gmag_grayscale = double(gmag_grayscale);
-                all_edges(:,:,i) = gmag_grayscale ./(255-T); %(piksel - treshold)/(255-treshold)
-                % or 0/(255-treshold)=0
-
-                all_edges_bin(:,:,i) = imbinarize(gmag_grayscale, 'global'); %Otsu for three channel validation
-
-            end
-
-            %% make a map of the edges ( edge in three channels => 0, compression grid and other => 1 )
-            im_edges = sum(all_edges, 3);
-            im_edges_binary=logical(sum(all_edges_bin, 3) == 3); % sum ones
-            im_edges=im_edges.*im_edges_binary; % check all channels
-
-            % prepare multilevel tresholding map
-            im_edges = additional_functions.delete_false_edges(im_edges, n, m, obj.CutPoint);
-            im_edges = imopen(im_edges, strel('square',2));
-            map_edges = imcomplement(im_edges);
-
-            % prepare binary map
-            im_edges_binary=additional_functions.delete_false_edges(im_edges_binary,n,m,obj.CutPoint);
-            im_edges_binary = imopen(im_edges_binary, strel('square', 2));
-            map_edges_binary=double(~im_edges_binary);
-
-            %% make a filter based on the chosen sigma
-            filter_mask=make_filter(filt);
-
-            %% make a weight maps
-            W1 = imfilter(map_edges, filter_mask, 'symmetric', 'conv');
-            W2 = imfilter(map_edges_binary, filter_mask, 'symmetric', 'conv');
-
-            %% filter whole images
-            im_res_level = imfilter(im2double(im) .* map_edges, ...
-                filter_mask, 'symmetric', 'conv') ./ W1;
-
-            im_res_bin = imfilter(im2double(im) .* map_edges_binary, ...
-                filter_mask, 'symmetric', 'conv') ./ W2;
-
-            %% add results with correct weight
-            im_res=im_res_level.*map_edges+(1.-map_edges).*im_res_bin;
-        end
-
-        function im_res = run_multi_tresh_experimental(obj)
+        function im_res = run_method_2(obj)
             %RUN_MULTILEVEL_TRESHOLDING artifact removal method
             % function uses multilevel tresholding in order to create a map of edges
             im=im2double(obj.Image);
@@ -329,7 +139,7 @@ classdef remove_artifacts
             end
         end
 
-        function im_res = run_blurring(obj)
+        function im_res = run_blurr(obj)
             %RUN_MULTILEVEL_TRESHOLDING artifact removal method
             % function uses multilevel tresholding in order to create a map of edges
             im=im2double(obj.Image);
@@ -342,7 +152,7 @@ classdef remove_artifacts
                 filter_mask, 'symmetric', 'conv');
         end
 
-        function im_res = run_experimental2(obj)
+        function im_res = run_method_3(obj)
             %RUN_FIXED_MULTILEVEL_TRESHOLDING artifact removal method
             % function uses multilevel tresholding and Otsu method
             % in order to create maps of edges in the last step results

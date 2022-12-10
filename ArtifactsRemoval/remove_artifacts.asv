@@ -18,7 +18,7 @@ classdef remove_artifacts
             obj.CutPoint=cut_point;
             obj.Image=im;
             obj.Sigma=sigm;
-            obj.FilterSize=filter_size;
+            obj.FilterSize=cell2mat(filter_size);
             obj.FilterType=filter_type;
             obj.Method=method;
         end

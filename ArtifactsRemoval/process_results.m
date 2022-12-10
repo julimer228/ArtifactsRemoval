@@ -18,10 +18,10 @@ t_names_avg = {'VariableNames', ["filter_size","mean_delta_PSNR",...
     "mean_delta_SSIM", "mean_delta_brisque", "mean_delta_niqe"]};
 
 
-folder_path ='..\ResultsCorrected\Tables\Raw\Q';
-folder_mean = '..\ResultsCorrected\Tables\Mean\Q';
-folder_heatmap = '..\ResultsCorrected\Tables\Heatmap\Q';
-quality = [10 30 50 70 90];
+folder_path ='..\ResultsExamplell\Tables\Raw\Q';
+folder_mean = '..\ResultsExamplell\Tables\Mean\Q';
+folder_heatmap = '..\ResultsExamplell\Tables\Heatmap\Q';
+quality = 5:5:95;
 heatmap_vars=["mean_delta_PSNR",...
     "mean_delta_SSIM", "mean_delta_brisque", "mean_delta_niqe"];
 titles=["Mean of delta PSNR",...

@@ -93,12 +93,12 @@ for q=1:length(quality)
         %% main loop over the images
         method=methods(i);
 
-        folder_csv_q_m_avg=strcat(folder_csv_q,method,'\Avg\');
-        folder_csv_q_m_gauss=strcat(folder_csv_q,method,'\Gauss\');
-        if isfolder(folder_csv_q_m_avg) == false && use_avg==true
+        folder_csv_q_m_avg=strcat(folder_csv_q,'/',method,'/Avg/');
+        folder_csv_q_m_gauss=strcat(folder_csv_q,'/',method,'/Gauss/');
+        if isfolder(folder_csv_q_m_avg) == false && use_gauss==true
             mkdir(folder_csv_q_m_avg);
         end
-        if isfolder(folder_csv_q_m_gauss) == false && use_gauss==true
+        if isfolder(folder_csv_q_m_gauss) == false
             mkdir(folder_csv_q_m_gauss);
         end
 

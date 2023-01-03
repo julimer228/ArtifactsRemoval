@@ -1,22 +1,15 @@
 %% Script to create boxplots
+folderpath='..\Results\ResultsAllMethods\Tables\Raw\Q';
+Q='10';
+blur_avg=readtable(strcat(folderpath,Q,'\blur\Avg\3_avg.csv'));
+tab1_avg=readtable(strcat(folderpath,Q,'\method_1\Avg\3_avg.csv'));
+tab2_avg=readtable(strcat(folderpath,Q,'\method_2\Avg\3_avg.csv'));
+tab3_avg=readtable(strcat(folderpath,Q,'\method_3\Avg\3_avg.csv'));
 
-blurr_avg=readtable("..\ResultsCorrected\Tables\Raw\Q70\blurr\Avg\3_avg.csv");
-tab1_avg=readtable("..\ResultsCorrected\Tables\Raw\Q70\otsu\Avg\3_avg.csv");
-tab2_avg=readtable("..\ResultsCorrected\Tables\Raw\Q70\multi\Avg\3_avg.csv");
-tab3_avg=readtable("..\ResultsCorrected\Tables\Raw\Q70\weights\Avg\3_avg.csv");
-
-blurr_gauss=readtable("..\ResultsCorrected\Tables\Raw\Q70\blurr\Gauss\11_gauss.csv");
-tab1_gauss=readtable("..\ResultsCorrected\Tables\Raw\Q70\otsu\Gauss\11_gauss.csv");
-tab2_gauss=readtable("..\ResultsCorrected\Tables\Raw\Q70\multi\Gauss\3_gauss.csv");
-tab3_gauss=readtable("..\ResultsCorrected\Tables\Raw\Q70\weights\Gauss\3_gauss.csv");
-
-blurr_gauss=blurr_gauss(blurr_gauss.sigma==0.7,:);
-tab1_gauss=tab1_gauss(tab1_gauss.sigma==1.1,:);
-tab2_gauss=tab2_gauss(tab2_gauss.sigma==0.7,:);
-tab3_gauss=tab3_gauss(tab3_gauss.sigma==0.7,:);
-
-
-
+blur_gauss=readtable(strcat(folderpath,Q,'\blur\Gauss\3_gauss.csv'));
+tab1_gauss=readtable(strcat(folderpath,Q,'\method_1\Gauss\3_gauss.csv'));
+tab2_gauss=readtable(strcat(folderpath,Q,'\method_2\Gauss\3_gauss.csv'));
+tab3_gauss=readtable(strcat(folderpath,Q,'\method_3\Gauss\3_gauss.csv'));
 
 quality="Q10";
 names=["blurr (avg)" "method 1 (avg)" "method 2 (avg)" "method 3 (avg)" "blurr (gauss)" "method 1 (gauss)" "method 2 (gauss)" "method 3 (gauss)"];
@@ -31,55 +24,3 @@ brisque_plot_avg=boxplot([blurr_avg.delta_brisque tab1_avg.delta_brisque tab2_av
     'Labels',names);
 niqe_plot_avg=boxplot([blurr_avg.delta_niqe tab1_avg.delta_niqe tab2_avg.delta_niqe tab3_avg.delta_niqe blurr_gauss.delta_niqe tab1_gauss.delta_niqe tab2_gauss.delta_niqe tab3_gauss.delta_niqe],'Notch','on', ...
     'Labels',names);
-
-
-
-
-% %%Q30
-% blurr_avg=readtable("..\ResultsCorrected\Tables\Raw\Q30\blurr\Avg\3_avg.csv");
-% tab1_avg=readtable("..\ResultsCorrected\Tables\Raw\Q30\otsu\Avg\3_avg.csv");
-% tab2_avg=readtable("..\ResultsCorrected\Tables\Raw\Q30\multi\Avg\3_avg.csv");
-% tab3_avg=readtable("..\ResultsCorrected\Tables\Raw\Q30\weights\Avg\3_avg.csv");
-% 
-% blurr_gauss=readtable("..\ResultsCorrected\Tables\Raw\Q30\blurr\Gauss\7_gauss.csv");
-% tab1_gauss=readtable("..\ResultsCorrected\Tables\Raw\Q30\otsu\Gauss\13_gauss.csv");
-% tab2_gauss=readtable("..\ResultsCorrected\Tables\Raw\Q30\multi\Gauss\3_gauss.csv");
-% tab3_gauss=readtable("..\ResultsCorrected\Tables\Raw\Q30\weights\Gauss\3_gauss.csv");
-% 
-% blurr_gauss=blurr_gauss(blurr_gauss.sigma==0.7,:);
-% tab1_gauss=tab1_gauss(tab1_gauss.sigma==1.1,:);
-% tab2_gauss=tab2_gauss(tab2_gauss.sigma==1.7,:);
-% tab3_gauss=tab3_gauss(tab3_gauss.sigma==2,:);
-
-%Q50
-% blurr_avg=readtable("..\ResultsCorrected\Tables\Raw\Q50\blurr\Avg\3_avg.csv");
-% tab1_avg=readtable("..\ResultsCorrected\Tables\Raw\Q50\otsu\Avg\3_avg.csv");
-% tab2_avg=readtable("..\ResultsCorrected\Tables\Raw\Q50\multi\Avg\3_avg.csv");
-% tab3_avg=readtable("..\ResultsCorrected\Tables\Raw\Q50\weights\Avg\3_avg.csv");
-% 
-% blurr_gauss=readtable("..\ResultsCorrected\Tables\Raw\Q50\blurr\Gauss\15_gauss.csv");
-% tab1_gauss=readtable("..\ResultsCorrected\Tables\Raw\Q50\otsu\Gauss\15_gauss.csv");
-% tab2_gauss=readtable("..\ResultsCorrected\Tables\Raw\Q50\multi\Gauss\3_gauss.csv");
-% tab3_gauss=readtable("..\ResultsCorrected\Tables\Raw\Q50\weights\Gauss\3_gauss.csv");
-% 
-% blurr_gauss=blurr_gauss(blurr_gauss.sigma==0.7,:);
-% tab1_gauss=tab1_gauss(tab1_gauss.sigma==1.1,:);
-% tab2_gauss=tab2_gauss(tab2_gauss.sigma==1.1,:);
-% tab3_gauss=tab3_gauss(tab3_gauss.sigma==1.1,:);
-
-
-%Q=90
-% blurr_avg=readtable("..\ResultsCorrected\Tables\Raw\Q90\blurr\Avg\3_avg.csv");
-% tab1_avg=readtable("..\ResultsCorrected\Tables\Raw\Q90\otsu\Avg\3_avg.csv");
-% tab2_avg=readtable("..\ResultsCorrected\Tables\Raw\Q90\multi\Avg\3_avg.csv");
-% tab3_avg=readtable("..\ResultsCorrected\Tables\Raw\Q90\weights\Avg\3_avg.csv");
-% 
-% blurr_gauss=readtable("..\ResultsCorrected\Tables\Raw\Q90\blurr\Gauss\5_gauss.csv");
-% tab1_gauss=readtable("..\ResultsCorrected\Tables\Raw\Q90\otsu\Gauss\3_gauss.csv");
-% tab2_gauss=readtable("..\ResultsCorrected\Tables\Raw\Q90\multi\Gauss\3_gauss.csv");
-% tab3_gauss=readtable("..\ResultsCorrected\Tables\Raw\Q90\weights\Gauss\3_gauss.csv");
-% 
-% blurr_gauss=blurr_gauss(blurr_gauss.sigma==0.7,:);
-% tab1_gauss=tab1_gauss(tab1_gauss.sigma==0.7,:);
-% tab2_gauss=tab2_gauss(tab2_gauss.sigma==0.7,:);
-% tab3_gauss=tab3_gauss(tab3_gauss.sigma==0.7,:);

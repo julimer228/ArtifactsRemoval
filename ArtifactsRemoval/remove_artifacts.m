@@ -49,37 +49,38 @@ classdef remove_artifacts
             filter_type=obj.FilterType;
             filter_size=obj.FilterSize;
             sigm=obj.Sigma;
-            %% preallocate memory
+            % preallocate memory
             [n, m, d] = size(im);
             all_edges = zeros(n, m, d, 'logical');
             filt=filters(filter_type, filter_size, sigm);
 
-            %% detect all edges for each image layer
+            % detect all edges for each image layer
             for i=1:d
-                %% extract a layer
+                % extract a layer
                 layer = im(:,:,i);
 
-                %% count gradients
+                % count gradients
                 [gmag, ~] = imgradient(layer, 'central');
                 gmag_grayscale = mat2gray(gmag);
 
-                %% detect edges
+                % detect edges
                 all_edges(:,:,i) = imbinarize(gmag_grayscale, 'global'); %Otsu
+
             end
 
-            %% make a map of the edges
+            % make a map of the edges
             im_edges = logical(sum(all_edges, 3) == 3); % sum ones
             im_edges = additional_functions.delete_false_edges(im_edges, n, m, obj.CutPoint);
             im_edges = imopen(im_edges, strel('square',2));
             map_edges = im2double(~im_edges);
 
-            %% make a filter based on the chosen parameters
+            % make a filter based on the chosen parameters
             filter_mask=make_filter(filt);
 
-            %% make a weight map
+            % make a weight map
             W = imfilter(map_edges, filter_mask, 'symmetric', 'conv');
 
-            %% filter whole image
+            % filter whole image
             im_res = imfilter(im .* map_edges, ...
                 filter_mask, 'symmetric', 'conv') ./ W;
 
@@ -95,45 +96,43 @@ classdef remove_artifacts
             sigm=obj.Sigma;
             filt=filters(filter_type, filter_size, sigm);
 
-            %% preallocate memory
+            % preallocate memory
             [n, m, d] = size(im);
             im_res=zeros(n,m,d,"double");
             all_edges = zeros(n, m, d, 'double'); % now numbers not logical values
             all_edges_bin=zeros(n,m,d,'logical'); % to detect ones in three channels
-            %% detect all edges for each image layer
+            % detect all edges for each image layer
             for i=1:d
-                %% extract a layer
+                % extract a layer
                 layer = im(:,:,i);
-                %% count gradients
+                % count gradients
                 [gmag, ~] = imgradient(layer, 'central');
                 gmag_grayscale = mat2gray(gmag);
-                %% detect edges
-                [T, ~]=graythresh(gmag_grayscale); % makes image histogram inside the function
+                % detect edges
+                [T, ~]=graythresh(gmag_grayscale); % Computes treshold value (Otsu algorithm)
                 gmag_grayscale(gmag_grayscale < T) = 0; % if pixel value is below treshold replace it with 0
-                gmag_grayscale(gmag_grayscale > T) = gmag_grayscale(gmag_grayscale > T) - T;  % (piksel-treshold)
-                all_edges(:,:,i) = gmag_grayscale ./(1-T); %(piksel - treshold)/(255-treshold)
-                % or 0/(255-treshold)=0
-                all_edges_bin(:,:,i) = imbinarize(gmag_grayscale, 'global'); %Otsu for three channel validation
-
+                gmag_grayscale(gmag_grayscale > T) = gmag_grayscale(gmag_grayscale > T) - T;  % (pixel-treshold)
+                all_edges(:,:,i) = gmag_grayscale ./(1-T); %(pixel - treshold)/(1-treshold) or 0/(1-treshold)=0
+                all_edges_bin(:,:,i) = imbinarize(gmag_grayscale, 'global'); %Otsu for three channel edges validation
             end
 
-            %% make a map of the edges ( edge in three channels => 0, compression grid and other => 1 )
+            % make a map of the edges ( edge in three channels => 0, compression grid and other => 1 )
             im_edges_binary=logical(sum(all_edges_bin, 3) == 3);
             im_edges_binary=additional_functions.delete_false_edges(im_edges_binary, n, m, obj.CutPoint);
             im_edges_binary = imopen(im_edges_binary, strel('square',2));
 
-            %% make a filter based on the chosen sigma
+            % make a filter based on the chosen sigma
             filter_mask=make_filter(filt);
 
             for i=1:d
-                %% create map for each layer
+                % create map for each layer
                 im_edges=all_edges(:,:,i).*im_edges_binary;
                 map_edges = imcomplement(im_edges);
 
-                %% make a weights map for each layer
+                % make a weights map for each layer
                 W = imfilter(map_edges, filter_mask, 'symmetric', 'conv');
 
-                %% filter whole image layer
+                % filter whole image layer
                 im_res(:,:,i) = imfilter(im(:,:,i) .* map_edges, ...
                     filter_mask, 'symmetric', 'conv') ./ W;
             end
@@ -163,27 +162,25 @@ classdef remove_artifacts
             sigm=obj.Sigma;
             filt=filters(filter_type, filter_size, sigm);
 
-            %% preallocate memory
+            % preallocate memory
             [n, m, d] = size(im);
             im_res=zeros(n, m, d, "double");
             all_edges = zeros(n, m, d, 'double'); % now numbers not logical values
             all_edges_bin=zeros(n,m,d,'logical'); % to detect ones in three channels
-            %% detect all edges for each image layer
+            % detect all edges for each image layer
             for i=1:d
-                %% extract a layer
+                % extract a layer
                 layer = im(:,:,i);
-                %% count gradients
+                % count gradients
                 [gmag, ~] = imgradient(layer, 'central');
                 gmag_grayscale = mat2gray(gmag);
-                %% detect edges
-                [T, ~]=graythresh(gmag_grayscale); % makes image histogram inside the function
+                % detect edges
+                [T, ~]=graythresh(gmag_grayscale); % compute treshold value (Otsu algorithm)
                 gmag_grayscale(gmag_grayscale < T) = 0; % if pixel value is below treshold replace it with 0
                 gmag_grayscale(gmag_grayscale > T) = gmag_grayscale(gmag_grayscale > T) - T;  % (piksel-treshold)
-                all_edges(:,:,i) = gmag_grayscale ./(1-T); %(piksel - treshold)/(1-treshold)
-                % or 0/(1-treshold)=0
+                all_edges(:,:,i) = gmag_grayscale ./(1-T); %(piksel - treshold)/(1-treshold) or 0/(1-treshold)=0
 
-                all_edges_bin(:,:,i) = imbinarize(gmag_grayscale, 'global'); %Otsu for three channel validation
-
+                all_edges_bin(:,:,i) = imbinarize(gmag_grayscale, 'global'); %Otsu for three channel edges validation
             end
 
             % Prepare binary map of edges
@@ -209,14 +206,14 @@ classdef remove_artifacts
                 im_edges=all_edges(:,:,i).*im_edges_binary_open;
                 map_edges = imcomplement(im_edges);
 
-                %% make a weight map
+                % make a weight map
                 W = imfilter(map_edges, filter_mask, 'symmetric', 'conv');
 
-                %% filter whole image layer
+                % filter whole image layer
                 im_res(:,:,i) = imfilter(im(:,:,i) .* map_edges, ...
                     filter_mask, 'symmetric', 'conv') ./ W;
 
-                %% add results with correct weights
+                % add results with correct weights
                 im_res(:,:,i)=im_res(:,:,i).*map_edges+(1.- map_edges).*im_res_bin(:,:,i);
             end
         end

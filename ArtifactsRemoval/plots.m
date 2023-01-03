@@ -1,4 +1,4 @@
-folder_path = '..\ResultsCorelation\Tables\Mean\Q';
+folder_path = '..\ResultsCorrelation2\Tables\Mean\Q';
 quality = 5:5:95;
 
 niqe={length(quality)};
@@ -64,8 +64,7 @@ hold on
 plot(quality, psnr, "r--o")
 hold on
 plot(quality, ssim,"b--o")
-ylim([0 3.2]);
-title("Sigma(Q)")
-legend("delta NIQE","delta PSNR", "delta SSIM")
-xlabel("Q")
-ylabel("sigma")
+ylim([0 6.1]);
+legend("delta NIQE","delta PSNR", "delta SSIM");
+xlabel("Q");
+ylabel("sigma");

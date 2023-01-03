@@ -1,41 +1,39 @@
-%% script to tune algorithm parameters
-close all; clc
+%% script to tune algorithms parameters
 
 % set a path to the images
-im_path = '..\BreCaHAD\images_example\*.tif';
-im_path_niqe = '..\BreCaHAD\images\*.tif';
+im_path = '..\BreCaHAD\images\*.tif';
 im_files = dir(im_path);
 
 % set a path for result images
-image_folder = '..\ResultsExamplell\Images\Q';
+image_folder = '..\ResultsGaussFunctionChanged\Images\Q';
 
 %set a path for result .csv files
-folder_csv ='..\ResultsExamplell\Tables\Raw\Q';
+folder_csv ='..\ResultsGaussFunctionChanged\Tables\Raw\Q';
 
 
 %train NIQE metric
-%model=quality_metrics.train_niqe(im_path_niqe);
+model=quality_metrics.train_niqe(im_path);
 
 %% make a tables for the results
 % gaussian filter
-t_size_gauss = {'Size' [0 17]};
+t_size_gauss = {'Size' [0 14]};
 t_vars_gauss = {'VariableTypes', ["string", "string", "string", "double", ...
-    "double", "double", "double", "double","double","double","double", "double", "double", "double","double", "double", "double"]};
+    "double", "double", "double", "double","double","double","double", "double","double", "double"]};
 
 t_names_gauss = {'VariableNames', ["name", "type", "method", "sigma", ...
     "filter_size", "jpg_PSNR", "PSNR", "delta_PSNR","jpg_SSIM","SSIM",...
-    "delta_SSIM", "jpg_brisque", "im_brisque", "delta_brisque", "jpg_niqe", "im_niqe", "delta_niqe"]};
+    "delta_SSIM", "jpg_niqe", "im_niqe", "delta_niqe"]};
 
 t_res_gauss = table(t_size_gauss{:}, t_vars_gauss{:}, t_names_gauss{:});
 
 % average filter
-t_size_avg = {'Size' [0 16]};
+t_size_avg = {'Size' [0 13]};
 t_vars_avg = {'VariableTypes', ["string", "string", "string", ...
-    "double", "double", "double","double","double","double","double","double","double","double","double", "double", "double"]};
+    "double","double","double","double","double","double","double","double", "double", "double"]};
 
 t_names_avg = {'VariableNames', ["name", "type", "method", ...
     "filter_size", "jpg_PSNR", "PSNR", "delta_PSNR","jpg_SSIM","SSIM",...
-    "delta_SSIM", "jpg_brisque", "im_brisque", "delta_brisque", "jpg_niqe", "im_niqe", "delta_niqe"]};
+    "delta_SSIM", "jpg_niqe", "im_niqe", "delta_niqe"]};
 
 t_res_avg = table(t_size_avg{:}, t_vars_avg{:}, t_names_avg{:});
 
@@ -43,23 +41,13 @@ t_res_avg = table(t_size_avg{:}, t_vars_avg{:}, t_names_avg{:});
 quality=[10 30 50 70 90];
 sigmas =[0.4 0.7 1.1 1.4 1.7 2 2.3 2.6 2.9];
 filter_sizes =[3 5 7 9 11 13 15 17 19];
-methods ="method_2";% ["method_1" "method_2" "method_3" "blurr"];
+methods =["method_1" "method_2" "method_3" "blurr"];
 cut_point=[1 1];
 use_gauss=true;
-use_avg=false;
-
+use_avg=true;
 use_sigma_avg=false;
 
-params=cell(length(sigmas)*length(filter_sizes),2);
-
-k=0;
-for i=0:length(params)-1
-    if(mod(i,length(sigmas))==0)
-        k=k+1;
-    end
-    params{i+1,1}=sigmas(mod(i,length(sigmas))+1);
-    params{i+1,2}=filter_sizes(k);
-end
+params=additional_functions.create_params(sigmas, filter_sizes);
 
 for q=1:length(quality)
     % Check if folders exist if not, create them
@@ -102,7 +90,7 @@ for q=1:length(quality)
             mkdir(folder_csv_q_m_gauss);
         end
 
-        for ind=1:1%length(im_files)
+        for ind=1:length(im_files)
             %% read an image and convert it into uint8
             im_name = strsplit(im_files(ind).name, '.');
             name=string(im_name(1));
@@ -116,7 +104,7 @@ for q=1:length(quality)
             delete('jpg_conv.jpg');
 
             %% count quality metrics for the jpg image
-            [jpg_ssim, jpg_psnr, jpg_brisque, jpg_niqe] = quality_metrics.count_metrics(im_jpg, im_org,model);
+            [jpg_ssim, jpg_psnr, jpg_niqe] = quality_metrics.count_metrics(im_jpg, im_org,model);
 
             if use_gauss==true
                 % run filters
@@ -130,16 +118,14 @@ for q=1:length(quality)
                     im=run_artifacts_removal(rem);
 
                     % count metrics
-                    [im_ssim, im_psnr, im_brisque, im_niqe] = quality_metrics.count_metrics(im, im_org,model);
+                    [im_ssim, im_psnr, im_niqe] = quality_metrics.count_metrics(im, im_org,model);
                     delta_psnr = quality_metrics.count_delta(im_psnr, jpg_psnr);
                     delta_ssim = quality_metrics.count_delta(im_ssim, jpg_ssim);
-                    delta_brisque = quality_metrics.count_delta(im_brisque, jpg_brisque);
                     delta_niqe=quality_metrics.count_delta(im_niqe, jpg_niqe);
                     % save row to the table
                     t_tabs_gauss{k}(end+1,:) = {name, 'gauss',method, ...
                         sigma, filter_size, jpg_psnr, im_psnr, delta_psnr, jpg_ssim,...
-                        im_ssim, delta_ssim, jpg_brisque, im_brisque, delta_brisque, jpg_niqe,...
-                        im_niqe, delta_niqe};
+                        im_ssim, delta_ssim, jpg_niqe, im_niqe, delta_niqe};
 
                     % save image to a file
                     % [gauss_method_s{sigma}_f{filter_size}_name.jpg]
@@ -147,10 +133,10 @@ for q=1:length(quality)
                         's_',string(sigma),'_f_',string(filter_size),name,'.png')) ;
                     imwrite(im,img_rem_name_gauss,"png");
                 end
-                parfor idx=1:length(params)
-                    param=params(idx,:);
-                    writetable(t_tabs_gauss{idx}, strcat(folder_csv_q_m_gauss,'sigma_',string(param(1,1)),'f_size',string(param(1,2)),'_gauss.csv'));
-                end
+            end
+            for idx=1:length(params)
+                param=params(idx,:);
+                writetable(t_tabs_gauss{idx}, strcat(folder_csv_q_m_gauss,'sigma_',string(param(1,1)),'f_size',string(param(1,2)),'_gauss.csv'));
             end
 
 
@@ -163,16 +149,14 @@ for q=1:length(quality)
                     im_avg=run_artifacts_removal(rem_avg);
 
                     % count metrics
-                    [im_ssim_avg, im_psnr_avg, im_brisque_avg, im_niqe] = quality_metrics.count_metrics(im_avg, im_org,model);
+                    [im_ssim_avg, im_psnr_avg, im_niqe] = quality_metrics.count_metrics(im_avg, im_org,model);
                     delta_psnr_avg = quality_metrics.count_delta(im_psnr_avg, jpg_psnr);
                     delta_ssim_avg = quality_metrics.count_delta(im_ssim_avg, jpg_ssim);
-                    delta_brisque_avg = quality_metrics.count_delta(im_brisque_avg, jpg_brisque);
                     delta_niqe=quality_metrics.count_delta(im_niqe, jpg_niqe);
                     % save results to the table
                     t_tabs_avg{k}(end+1,:) = {name, 'avg',method, ...
                         filter_sizes(k), jpg_psnr, im_psnr_avg, delta_psnr_avg, jpg_ssim,...
-                        im_ssim_avg, delta_ssim_avg, jpg_brisque, im_brisque_avg, delta_brisque_avg,...
-                        jpg_niqe, im_niqe, delta_niqe};
+                        im_ssim_avg, delta_ssim_avg,jpg_niqe, im_niqe, delta_niqe};
 
                     % save image to a file
                     % [avg_method_f{filter_size}_name.jpg]
@@ -180,7 +164,7 @@ for q=1:length(quality)
                         string(filter_sizes(k)),'_',name,'.png')) ;
                     imwrite(im_avg,img_rem_name_avg);
                 end
-                parfor idx=1:length(filter_sizes)
+                for idx=1:length(filter_sizes)
                     writetable(t_tabs_avg{idx}, string(strcat(folder_csv_q_m_avg,string(filter_sizes(idx)),'_avg.csv')));
                 end
             end

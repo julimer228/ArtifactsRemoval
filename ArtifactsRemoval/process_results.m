@@ -4,28 +4,29 @@
 % gaussian filter
 t_size_gauss = {'Size' [0 6]};
 t_vars_gauss = {'VariableTypes', [ "double", ...
-    "double", "double", "double", "double", "double"]};
+    "double", "double", "double", "double"]};
 
 t_names_gauss = {'VariableNames', ["sigma","filter_size", "mean_delta_PSNR",...
-    "mean_delta_SSIM", "mean_delta_brisque", "mean_delta_niqe"]};
+    "mean_delta_SSIM", "mean_delta_niqe"]};
+gauss_full_results=table();
 
 % avg filter
 t_size_avg = {'Size' [0 5]};
 t_vars_avg = {'VariableTypes',
-    ["double", "double", "double", "double", "double"]};
+    ["double", "double", "double", "double"]};
 
 t_names_avg = {'VariableNames', ["filter_size","mean_delta_PSNR",...
-    "mean_delta_SSIM", "mean_delta_brisque", "mean_delta_niqe"]};
+    "mean_delta_SSIM", "mean_delta_niqe"]};
 
 
-folder_path ='..\ResultsExamplell\Tables\Raw\Q';
-folder_mean = '..\ResultsExamplell\Tables\Mean\Q';
-folder_heatmap = '..\ResultsExamplell\Tables\Heatmap\Q';
-quality = 5:5:95;
+folder_path ='..\ResultsGaussFunctionChanged\Tables\Raw\Q';
+folder_mean = '..\ResultsGaussFunctionChanged\Tables\Mean\Q';
+folder_heatmap = '..\ResultsGaussFunctionChanged\Tables\Heatmap\Q';
+quality = 10:20:90;
 heatmap_vars=["mean_delta_PSNR",...
-    "mean_delta_SSIM", "mean_delta_brisque", "mean_delta_niqe"];
+    "mean_delta_SSIM", "mean_delta_niqe"];
 titles=["Mean of delta PSNR",...
-    "Mean of delta SSIM", "Mean of delta BRISQUE", "Mean of delta NIQE"];
+    "Mean of delta SSIM", "Mean of delta NIQE"];
 
 % Iterate through folders
 for q=1:length(quality)
@@ -73,7 +74,7 @@ for q=1:length(quality)
                 for r=1:length(res_files)
                     % read file
                     tab=readtable([res_files(r).folder '\' res_files(r).name]);
-                    tabstats= grpstats(tab,"filter_size","mean", "DataVars", ["delta_PSNR", "delta_SSIM","delta_brisque", "delta_niqe"]);
+                    tabstats= grpstats(tab,"filter_size","mean", "DataVars", ["delta_PSNR", "delta_SSIM", "delta_niqe"]);
                     tabstats=removevars(tabstats,{'GroupCount' });
                     avg_means=[avg_means;tabstats];
                 end
@@ -99,11 +100,17 @@ for q=1:length(quality)
                 % read tables form csv
                 for r=1:length(res_files)
                     tab=readtable([res_files(r).folder '\' res_files(r).name]);
-                    tabstats=grpstats(tab,["filter_size" "sigma"],"mean", "DataVars", ["delta_PSNR", "delta_SSIM","delta_brisque", "delta_niqe"]);
+                    tabstats=grpstats(tab,["filter_size" "sigma"],"mean", "DataVars", ["delta_PSNR", "delta_SSIM", "delta_niqe"]);
                     tabstats=removevars(tabstats,{'GroupCount'});
+                   % x=[strcat(tabstats.Properties.RowNames{1},string(quality(q)))];
+                   % tabstats.Properties.RowNames{1}=x;
+                    quality_column={quality(q)};
                     gauss_means=[gauss_means; tabstats];
                 end
 
+                quality_column=repmat(quality(q),height(gauss_means),1);
+                gauss_means=addvars(gauss_means, quality_column);
+                
                 % Heatmaps
                 % Gauss
                 for j=1:length(heatmap_vars)
@@ -112,6 +119,8 @@ for q=1:length(quality)
                     h=heatmap(gauss_means,"filter_size","sigma", ColorVariable=column_name, Title=title);
                     saveas(h,strcat(heatmap_path,name_method,"_",column_name,"_gauss.jpg"));
                 end
+
+
 
                 % means
                 gauss_means=sortrows(gauss_means, "filter_size");

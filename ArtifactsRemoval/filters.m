@@ -33,11 +33,9 @@ classdef filters
             % Creates a gaussian filter mask with the given size and sigma
             % Substract 1 from filter size, because we have to calculate
             % coordinates
-            f_range=obj.Size - 1;
-            sigm=obj.Sigma;
-            [x, y] = meshgrid(-f_range/2:f_range/2, -f_range/2:f_range/2);
-            to_be_exp = -(x.^2+y.^2) / (2*sigm*sigm);
-            mask = exp(to_be_exp) / (2*pi*sigm*sigm);
+             size=[obj.Size, obj.Size];
+             sigma=[obj.Sigma, obj.Sigma];
+             mask = images.internal.createGaussianKernel(sigma, size);
         end
 
         function mask = avg_filter(obj)

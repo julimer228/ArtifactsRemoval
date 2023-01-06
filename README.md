@@ -19,6 +19,7 @@
 <li>Heatmap - tutaj znadują się foldery z mapami cieplnymi wykonanymi na podstawie średnich wyników każdej z metod</li>
 <li>Mean - zawiera pliki .csv ze średnimi wynikami każdej z metod</li>
 <li>Raw - zawiera pliki .csv z danymi dla każdego obrazu</li>
+<li>ExampleImages - zbiór przykładowych obrazów po usunięciu artefaktów kompresji</li>
 </ul>
 <li>ResultsCorrelation - folder zawiera wyniki uzyskane dla drugiego algorytmu w celu określenia zależności pomiędzy parametrami filtra Gaussa, a parametrem jakości kompresji</li>
 <ul>

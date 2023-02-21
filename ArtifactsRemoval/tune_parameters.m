@@ -94,7 +94,7 @@ for q=1:length(quality)
             mkdir(folder_csv_q_m_gauss);
         end
 
-        for ind=1:2%length(im_files)
+        for ind=1:length(im_files)
             %% read an image and convert it into uint8
             im_name = strsplit(im_files(ind).name, '.');
             name=string(im_name(1));

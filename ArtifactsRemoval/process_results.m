@@ -19,9 +19,9 @@ t_names_avg = {'VariableNames', ["filter_size","mean_delta_PSNR",...
     "mean_delta_SSIM", "mean_delta_niqe"]};
 
 
-folder_path ='..\Results\Tabels\Raw\Q';
-folder_mean = '..\Results\Tabels\Mean\Q';
-folder_heatmap = '..\Results\Tabels\Heatmap\Q';
+folder_path ='..\Results\Tables\Raw\Q';
+folder_mean = '..\Results\Tables\Mean\Q';
+folder_heatmap = '..\Results\Tables\Heatmap\Q';
 quality = 10:20:90;
 heatmap_vars=["mean_delta_PSNR",...
     "mean_delta_SSIM", "mean_delta_niqe"];

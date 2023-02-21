@@ -8,7 +8,7 @@ im_files = dir(im_path);
 image_folder = '..\Results\Images\Q';
 
 %set a path for result .csv files
-folder_csv ='..\Results\Tabels\Raw\Q';
+folder_csv ='..\Results\Tables\Raw\Q';
 
 
 %train NIQE metric

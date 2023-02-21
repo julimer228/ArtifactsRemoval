@@ -1,4 +1,4 @@
-%% Process results, count means, create heatmaps and boxplots
+%% Process results, count means, create heatmaps
 
 % tables for results
 % gaussian filter
@@ -19,9 +19,9 @@ t_names_avg = {'VariableNames', ["filter_size","mean_delta_PSNR",...
     "mean_delta_SSIM", "mean_delta_niqe"]};
 
 
-folder_path ='..\ResultsGaussFunctionChanged\Tables\Raw\Q';
-folder_mean = '..\ResultsGaussFunctionChanged\Tables\Mean\Q';
-folder_heatmap = '..\ResultsGaussFunctionChanged\Tables\Heatmap\Q';
+folder_path ='..\ResultsGaussFunctionChanged\Tabels\Raw\Q';
+folder_mean = '..\ResultsGaussFunctionChanged\Tabels\Mean\Q';
+folder_heatmap = '..\ResultsGaussFunctionChanged\Tabels\Heatmap\Q';
 quality = 10:20:90;
 heatmap_vars=["mean_delta_PSNR",...
     "mean_delta_SSIM", "mean_delta_niqe"];

@@ -19,7 +19,8 @@ classdef filters
 
         function mask = make_filter(obj)
             %MAKE_FILTER Creates a filter mask
-            %   Creates a mask of chosen filter type
+            % Creates a mask of chosen filter type
+            % returns mask - created mask
             switch obj.Type
                 case 'gauss'
                     mask = gauss_filter(obj);
@@ -31,8 +32,8 @@ classdef filters
         function mask = gauss_filter(obj)
             %GAUSS_FILTER Returns a gaussian filter mask
             % Creates a gaussian filter mask with the given size and sigma
-            % Substract 1 from filter size, because we have to calculate
-            % coordinates
+            % returns mask - created mask
+
              size=[obj.Size, obj.Size];
              sigma=[obj.Sigma, obj.Sigma];
              mask = images.internal.createGaussianKernel(sigma, size);
@@ -41,6 +42,8 @@ classdef filters
         function mask = avg_filter(obj)
             %AVG_FILTER Returns an average filter mask
             % Creates an average filter mask with the given size and sigma
+            % returns mask - created mask
+
             f_size=obj.Size;
             mask = fspecial("average",[f_size f_size]);
         end

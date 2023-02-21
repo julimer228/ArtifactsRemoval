@@ -8,7 +8,7 @@ im_files = dir(im_path);
 image_folder = '..\ResultsGaussFunctionChanged\Images\Q';
 
 %set a path for result .csv files
-folder_csv ='..\ResultsGaussFunctionChanged\Tables\Raw\Q';
+folder_csv ='..\ResultsGaussFunctionChanged\Tabels\Raw\Q';
 
 
 %train NIQE metric
@@ -37,7 +37,7 @@ t_names_avg = {'VariableNames', ["name", "type", "method", ...
 
 t_res_avg = table(t_size_avg{:}, t_vars_avg{:}, t_names_avg{:});
 
-%% make parameter sets
+% parameters
 quality=[10 30 50 70 90];
 sigmas =[0.4 0.7 1.1 1.4 1.7 2 2.3 2.6 2.9];
 filter_sizes =[3 5 7 9 11 13 15 17 19];
@@ -47,6 +47,7 @@ use_gauss=true;
 use_avg=true;
 use_sigma_avg=false;
 
+% create a cell with parameters for parallel operations
 params=additional_functions.create_params(sigmas, filter_sizes);
 
 for q=1:length(quality)
@@ -56,6 +57,8 @@ for q=1:length(quality)
     folder_csv_q=strcat(folder_csv, string(quality(q)),'\');
 
     for m=1:length(methods)
+
+        % create folders for each method and filter type
         folder_g=strcat(image_folder_gauss,'/',methods(m),'/');
         folder_a=strcat(image_folder_avg,'/',methods(m),'/');
         if isfolder(folder_g) == false && use_gauss==true
@@ -68,6 +71,7 @@ for q=1:length(quality)
 
     for i=1:length(methods)
 
+        % create tabels for results
         t_tabs_gauss=cell(length(params),1);
         for t=1:length(params)
             t_tabs_gauss{t}=t_res_gauss;
@@ -78,7 +82,7 @@ for q=1:length(quality)
             t_tabs_avg{t}=t_res_avg;
         end
 
-        %% main loop over the images
+        %% main loop over parameters and images
         method=methods(i);
 
         folder_csv_q_m_avg=strcat(folder_csv_q,method,'\Avg\');
@@ -106,6 +110,7 @@ for q=1:length(quality)
             %% count quality metrics for the jpg image
             [jpg_ssim, jpg_psnr, jpg_niqe] = quality_metrics.count_metrics(im_jpg, im_org,model);
 
+            % gaussian filter
             if use_gauss==true
                 % run filters
                 parfor k=1:length(params)
@@ -134,12 +139,15 @@ for q=1:length(quality)
                     imwrite(im,img_rem_name_gauss,"png");
                 end
             end
+
+            % save results
             for idx=1:length(params)
                 param=params(idx,:);
                 writetable(t_tabs_gauss{idx}, strcat(folder_csv_q_m_gauss,'sigma_',string(param(1,1)),'f_size',string(param(1,2)),'_gauss.csv'));
             end
 
 
+            % average filter
             if use_avg==true
                 parfor k=1:length(filter_sizes)
                     %Average filter
@@ -164,6 +172,8 @@ for q=1:length(quality)
                         string(filter_sizes(k)),'_',name,'.png')) ;
                     imwrite(im_avg,img_rem_name_avg);
                 end
+
+                % save results
                 for idx=1:length(filter_sizes)
                     writetable(t_tabs_avg{idx}, string(strcat(folder_csv_q_m_avg,string(filter_sizes(idx)),'_avg.csv')));
                 end

@@ -1,4 +1,5 @@
-folder_path = '..\ResultsCorrelation2\Tables\Mean\Q';
+% script to create plots 
+folder_path = '..\ResultsCorrelation2\Tabels\Mean\Q';
 quality = 5:5:95;
 
 niqe={length(quality)};

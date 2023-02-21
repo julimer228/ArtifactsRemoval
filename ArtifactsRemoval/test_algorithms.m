@@ -1,15 +1,15 @@
-%% script to detect and remove JPG compression artifacts for one image
+% script to detect and remove JPG compression artifacts for one image
 
-%% read an .tif image an convert it to uint8
+% read an .tif image an convert it to uint8
 [im_file, im_path] = uigetfile({'*.tif' ; '*.tiff'}, 'Select an image');
 im_org_uint16 = imread([im_path '\' im_file]);
 im_org = additional_functions.conv_to_uint8(im_org_uint16);
 
-%% compress to jpg
+% compress to jpg
 imwrite(im_org, 'jpg_conv.jpg', 'jpg', 'Quality', 30);
 im_jpg= imread('jpg_conv.jpg');
 
-%% remove jpg compression artifacts
+% remove jpg compression artifacts
 % sigmas = [0.4 0.7 1.1 1.4 1.7 2 2.3 2.6 2.9];
 % filter_sizes = [3 5 7 9 11 13 15 17 19];
 % methods = ["method_1" "method_2" "method_3" "blurr"]

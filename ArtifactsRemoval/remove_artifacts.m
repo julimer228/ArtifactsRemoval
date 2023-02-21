@@ -2,7 +2,7 @@ classdef remove_artifacts
     %REMOVE_ARTIFACTS class to perform artifacts removal operations
 
     properties
-        Image
+        Image 
         CutPoint
         Sigma
         FilterSize 
@@ -15,6 +15,15 @@ classdef remove_artifacts
                 filter_type, method)
             %REMOVE_ARTIFACTS Construct an instance of the remove_artifacts
             %class
+            % im - compressed image
+            % cut_point - cut point of the image ([1 1]) when the original .tiff image is
+            % compressed in matlab and artifacts removal is run for the whole image
+            % sigm - sigma parameter (standard deviation) for the gaussian filter
+            % (for average filter set pass false value) 
+            % filter_size - size of the filter
+            % filter_type - type of the filter
+            % method - artifacts removal method
+
             obj.CutPoint=cut_point;
             obj.Image=im;
             obj.Sigma=sigm;
@@ -25,7 +34,8 @@ classdef remove_artifacts
 
         function im_res = run_artifacts_removal(obj)
             %RUN_ARTIFACTS_REMOVAL method removes artifacts
-            %   Method removes artifacts with chosen methods and filters
+            % Method removes artifacts with chosen methods and filters
+            % im_res - image after artifacts removal
 
             switch obj.Method
                 case 'method_1'
@@ -45,6 +55,8 @@ classdef remove_artifacts
         function im_res = run_method_1(obj)
             %RUN_OTSU artifacts removal method
             % function uses otsu algorithm in order to create a map of edges
+             % im_res - image after artifacts removal
+
             im=im2double(obj.Image);
             filter_type=obj.FilterType;
             filter_size=obj.FilterSize;
@@ -90,6 +102,8 @@ classdef remove_artifacts
         function im_res = run_method_2(obj)
             %RUN_MULTILEVEL_TRESHOLDING artifact removal method
             % function uses multilevel tresholding in order to create a map of edges
+             % im_res - image after artifacts removal
+
             im=im2double(obj.Image);
             filter_type=obj.FilterType;
             filter_size=obj.FilterSize;
@@ -141,6 +155,8 @@ classdef remove_artifacts
         function im_res = run_blurr(obj)
             %RUN_MULTILEVEL_TRESHOLDING artifact removal method
             % function uses multilevel tresholding in order to create a map of edges
+             % im_res - image after artifacts removal
+
             im=im2double(obj.Image);
             filter_type=obj.FilterType;
             filter_size=obj.FilterSize;
@@ -156,6 +172,8 @@ classdef remove_artifacts
             % function uses multilevel tresholding and Otsu method
             % in order to create maps of edges in the last step results
             % of both methods are added together with weights
+             % im_res - image after artifacts removal
+
             im=im2double(obj.Image);
             filter_type=obj.FilterType;
             filter_size=obj.FilterSize;

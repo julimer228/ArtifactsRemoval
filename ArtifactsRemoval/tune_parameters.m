@@ -5,10 +5,10 @@ im_path = '..\BreCaHAD\images\*.tif';
 im_files = dir(im_path);
 
 % set a path for result images
-image_folder = '..\ResultsGaussFunctionChanged\Images\Q';
+image_folder = '..\Results\Images\Q';
 
 %set a path for result .csv files
-folder_csv ='..\ResultsGaussFunctionChanged\Tabels\Raw\Q';
+folder_csv ='..\Results\Tabels\Raw\Q';
 
 
 %train NIQE metric
@@ -94,7 +94,7 @@ for q=1:length(quality)
             mkdir(folder_csv_q_m_gauss);
         end
 
-        for ind=1:length(im_files)
+        for ind=1:2%length(im_files)
             %% read an image and convert it into uint8
             im_name = strsplit(im_files(ind).name, '.');
             name=string(im_name(1));
